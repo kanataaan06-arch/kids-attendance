@@ -444,11 +444,14 @@ async function executeBulkDelete(){
       try{
         // Fetch the five answer subcollections at the same time.
         const answers=await Promise.all(group.map(e=>getDocs(collection(db,'events',e.id,'answers'))));
-        const writeCount=group.length+answers.reduce((sum,snapshot)=>sum+snapshot.size,0);
+        const publicPeople=await Promise.all(group.map(e=>getDocs(collection(db,'parentSchedules',e.id,'instructors'))));
+        const writeCount=group.length*2+answers.reduce((sum,snapshot)=>sum+snapshot.size,0)+publicPeople.reduce((sum,snapshot)=>sum+snapshot.size,0);
         if(writeCount>400)throw new Error('回答データが多すぎます。対象を減らして再実行してください。');
         const batch=writeBatch(db);
         group.forEach((e,i)=>{
           answers[i].docs.forEach(answer=>batch.delete(answer.ref));
+          publicPeople[i].docs.forEach(person=>batch.delete(person.ref));
+          batch.delete(parentScheduleRef(e.id));
           batch.delete(doc(db,'events',e.id));
         });
         // Event documents and their answers are removed atomically per group.
@@ -489,6 +492,7 @@ unsubs.push(onSnapshot(collection(db,'members'),snapshot=>{
   const own=members.find(m=>m.id===me.uid);
   if(own&&own.role!==profile?.role){window.location.reload();return}
   if(own){profile={...own};$('authstate').textContent='ログイン中：'+own.name}
+  if(profile?.role==='admin')for(const e of events)syncPublicSchedule(e).then(()=>Promise.all(members.map(m=>syncPublicInstructor(e,m)))).catch(console.error);
   render();
 },fail));
 
@@ -519,7 +523,7 @@ document.addEventListener('click',async ev=>{let b=ev.target.closest('button');i
   if(!selectedEvent||selectedEvent.date<today())return;
   futureMonth=selectedEvent.date.slice(0,7);
   tab='future';render();
-  const target=[...document.querySelectorAll('#future [data-event-id]')].find(el=>el.dataset.eventId===b.dataset.openEvent);if(target){const details=target.querySelector('details');if(details)details.open=true;target.scrollIntoView({behavior:'smooth',block:'start'})}return}if(b.dataset.tab){if(profile.role==='parent'&&b.dataset.tab!=='future')return;if((b.dataset.tab==='members'||b.dataset.tab==='deleteManager')&&profile.role!=='admin')return;tab=b.dataset.tab;render();if(tab==='past'&&pastLoadedMonth!==currentPastMonth())loadPastMonth();if(tab==='deleteManager'&&deletePeriod!=='future'&&!deleteHistoryLoaded)loadDeleteHistory();return}if(b.dataset.deleteEvent&&profile.role==='admin'){const id=b.dataset.deleteEvent;const event=[...events,...pastEvents,...deleteHistory].find(e=>e.id===id);if(!event)return;const title=`${event.date} ${event.kind||'通常活動'}（${event.place}）`;if(!confirm(`${title} を削除しますか？\nこの予定と全員の出欠回答が削除され、元に戻せません。`))return;b.disabled=true;try{const answers=await getDocs(collection(db,'events',id,'answers'));await Promise.all(answers.docs.map(d=>deleteDoc(d.ref)));await deleteDoc(doc(db,'events',id));bulkDrafts.delete(id);pastEvents=pastEvents.filter(e=>e.id!==id);deleteHistory=deleteHistory.filter(e=>e.id!==id);if(tab==='past')renderPast();notify('予定を削除しました')}catch(e){fail(e);b.disabled=false}return}if(b.dataset.answer&&profile.role!=='parent'){try{await publishOwnAttendance(b.dataset.answer,b.dataset.value)}catch(e){fail(e)}}if(b.dataset.remove&&profile.role==='admin'){
+  const target=[...document.querySelectorAll('#future [data-event-id]')].find(el=>el.dataset.eventId===b.dataset.openEvent);if(target){const details=target.querySelector('details');if(details)details.open=true;target.scrollIntoView({behavior:'smooth',block:'start'})}return}if(b.dataset.tab){if(profile.role==='parent'&&b.dataset.tab!=='future')return;if((b.dataset.tab==='members'||b.dataset.tab==='deleteManager')&&profile.role!=='admin')return;tab=b.dataset.tab;render();if(tab==='past'&&pastLoadedMonth!==currentPastMonth())loadPastMonth();if(tab==='deleteManager'&&deletePeriod!=='future'&&!deleteHistoryLoaded)loadDeleteHistory();return}if(b.dataset.deleteEvent&&profile.role==='admin'){const id=b.dataset.deleteEvent;const event=[...events,...pastEvents,...deleteHistory].find(e=>e.id===id);if(!event)return;const title=`${event.date} ${event.kind||'通常活動'}（${event.place}）`;if(!confirm(`${title} を削除しますか？\nこの予定と全員の出欠回答が削除され、元に戻せません。`))return;b.disabled=true;try{const answers=await getDocs(collection(db,'events',id,'answers'));const publicPeople=await getDocs(collection(db,'parentSchedules',id,'instructors'));const batch=writeBatch(db);answers.docs.forEach(d=>batch.delete(d.ref));publicPeople.docs.forEach(d=>batch.delete(d.ref));batch.delete(parentScheduleRef(id));batch.delete(doc(db,'events',id));await batch.commit();bulkDrafts.delete(id);pastEvents=pastEvents.filter(e=>e.id!==id);deleteHistory=deleteHistory.filter(e=>e.id!==id);if(tab==='past')renderPast();notify('予定を削除しました')}catch(e){fail(e);b.disabled=false}return}if(b.dataset.answer&&profile.role!=='parent'){try{await publishOwnAttendance(b.dataset.answer,b.dataset.value)}catch(e){fail(e)}}if(b.dataset.remove&&profile.role==='admin'){
   const departing=members.find(m=>m.id===b.dataset.remove);
   if(!departing)return;
   if(!confirm(`${departing.name}さんの承認を取り消しますか？\n過去の活動には名前・出欠を残し、今後の活動からは表示を外します。`))return;
@@ -542,7 +546,7 @@ document.addEventListener('click',async ev=>{let b=ev.target.closest('button');i
   }catch(e){fail(e)}finally{b.disabled=false}
 }});
 document.addEventListener('change',async ev=>{let el=ev.target;if(el.classList.contains('bulk-answer')){bulkDrafts.set(el.dataset.id,el.value);return}if(!profile||profile.role!=='admin')return;
-if(el.dataset.memberRole){const member=members.find(m=>m.id===el.dataset.memberRole);if(!member||member.role==='admin')return;const newRole=el.value;if(!['member','parent'].includes(newRole))return;const oldRole=member.role==='parent'?'parent':'member';if(newRole===oldRole)return;el.disabled=true;try{await updateDoc(doc(db,'members',member.id),{role:newRole});notify(`${member.name}さんの権限を「${newRole==='parent'?'保護者':'メンバー'}」に変更しました`)}catch(e){el.value=oldRole;fail(e)}finally{el.disabled=false}return}
+if(el.dataset.memberRole){const member=members.find(m=>m.id===el.dataset.memberRole);if(!member||member.role==='admin')return;const newRole=el.value;if(!['member','parent'].includes(newRole))return;const oldRole=member.role==='parent'?'parent':'member';if(newRole===oldRole)return;el.disabled=true;try{await updateDoc(doc(db,'members',member.id),{role:newRole});if(newRole==='parent')await Promise.all(events.map(async e=>{const ref=publicInstructorRef(e.id,member.id);if((await getDoc(ref)).exists())await deleteDoc(ref)}));notify(`${member.name}さんの権限を「${newRole==='parent'?'保護者':'メンバー'}」に変更しました`)}catch(e){el.value=oldRole;fail(e)}finally{el.disabled=false}return}
 if(el.dataset.kindChoice){
   const id=el.dataset.kindChoice;
   const wrap=[...document.querySelectorAll('[data-custom-kind-wrap]')].find(x=>x.dataset.customKindWrap===id);
