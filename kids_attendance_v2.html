@@ -62,6 +62,28 @@ button,select,input{font:inherit;border:1px solid #cdd4df;border-radius:9px;padd
 #create #chosenDates{font-size:16px;font-weight:500}
 @media(max-width:500px){#create .time-title{font-size:18px}#create .time-choice span{font-size:16px;padding:12px 8px;min-height:54px}#create .fields>label,#create .fields .fields label,#create .card>label{font-size:17px}}
 .time-options{display:flex;flex-wrap:wrap;gap:8px}.fields .time-choice{position:relative;display:inline-flex;flex-direction:row;cursor:pointer;font-size:14px}.time-choice input{position:absolute;opacity:0;width:1px;height:1px;margin:0;padding:0}.time-choice span{display:flex;align-items:center;justify-content:center;min-height:44px;box-sizing:border-box;padding:10px 14px;border:1px solid #cdd4df;border-radius:10px;background:#fff;color:#263044;font-weight:600}.time-choice input:checked+span{background:#16824a;color:white;border-color:#16824a}.time-choice input:focus-visible+span{outline:3px solid #2463db;outline-offset:2px}@media(max-width:500px){.fields .time-choice{flex:1 1 calc(50% - 8px)}.time-choice span{width:100%;padding:10px 8px}}@media(max-width:500px){.bulk-entry{align-items:flex-start}.bulk-info{flex-basis:100%}.bulk-options{width:100%}.bulk-choice{flex:1}.bulk-choice span{width:100%}}
+
+/* Always-visible, multi-select calendar */
+.create-calendar{max-width:520px;margin:15px 0 12px;padding:12px;border:1px solid #d9e4f4;background:#f9fbff;border-radius:15px}
+.create-calendar-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.create-calendar-header strong{font-size:19px;color:#24324a}
+.create-calendar-header button{width:43px;height:43px;padding:0;font-size:27px;line-height:1;color:#2463db;border:1px solid #d8e2f1;border-radius:10px;background:white}
+.create-calendar-weekdays,.create-calendar-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;text-align:center}
+.create-calendar-weekdays{margin-bottom:7px;color:#566780;font-size:13px;font-weight:750}
+.create-calendar-weekdays span:first-child,.create-calendar-weekdays span:last-child{color:#d03948}
+.create-calendar-days .calendar-day{width:100%;min-width:0;aspect-ratio:1/1;min-height:39px;padding:0;border:1px solid transparent;border-radius:10px;background:white;font-size:16px;font-weight:700}
+.create-calendar-days .calendar-day.holiday-date{color:#d03948}
+.create-calendar-days .calendar-day.weekday-date{color:#202938}
+.create-calendar-days .calendar-day.calendar-today{border-color:#87abea}
+.create-calendar-days .calendar-day.calendar-selected{background:#2463db;color:white;border-color:#2463db;box-shadow:0 2px 7px #2463db30}
+.create-calendar-days .calendar-day:focus-visible{outline:3px solid #80aafa;outline-offset:2px}
+.selected-dates-heading{font-size:16px;font-weight:800;color:#263044;margin:15px 0 7px}
+.selected-dates-heading span{color:#2463db;font-size:14px}
+.chosen-date-list{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+.chosen-date-list .muted{margin:0}
+.chosen-date{display:inline-flex;align-items:center;gap:7px;padding:6px 8px 6px 11px;background:#edf4ff;border:1px solid #d7e6ff;border-radius:9px;font-size:14px;font-weight:700}
+.chosen-date button{padding:0;width:24px;height:24px;line-height:1;border:0;border-radius:7px;background:#dbe8fa;color:#315b99;font-size:18px}
+@media(max-width:390px){.create-calendar{padding:8px}.create-calendar-days,.create-calendar-weekdays{gap:3px}.create-calendar-days .calendar-day{min-height:36px;font-size:15px}}
 /* Past activity archive */
 .past-heading,.member-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .past-heading h3,.member-heading h3{margin:0}
@@ -111,7 +133,7 @@ button,select,input{font:inherit;border:1px solid #cdd4df;border-radius:9px;padd
 <button type="button" data-tab="members" id="membersTab" class="hidden"><span class="tab-icon" aria-hidden="true">👥</span><span class="tab-label">メンバーの管理</span></button>
 </nav>
 <div id="message" class="hidden notice"></div><section id="future"></section><section id="bulk" class="hidden"></section>
-<section id="create" class="hidden"><div class="card"><h3>🗓️ 予定をまとめて登録</h3><p class="muted">カレンダーで日付を選び「日付を追加」を押してください。複数日登録できます。</p><label>📅 活動日付<input id="pickdate" type="date"><button id="pushdate" type="button">日付を追加</button><div id="chosenDates"></div></label><div class="fields"><div class="wide"><div class="time-title">🎭 活動の種類</div><div class="time-options" role="radiogroup" aria-label="活動の種類"><label class="time-choice"><input type="radio" name="kindPreset" value="通常活動" checked><span>🐦 通常活動</span></label><label class="time-choice"><input type="radio" name="kindPreset" value="あそぼう"><span>🎈 あそぼう</span></label><label class="time-choice"><input type="radio" name="kindPreset" value="忍者"><span>🥷 忍者</span></label><label class="time-choice"><input type="radio" name="kindPreset" value="合宿"><span>🏕️ 合宿</span></label><label class="time-choice"><input type="radio" name="kindPreset" value="other"><span>✨ 自由入力</span></label></div></div><label id="customLabel" class="wide hidden">✨ イベント名<input id="customKind" placeholder="イベント名を入力してください"></label><div class="wide"><div class="time-title">🕒 活動時間</div><div class="time-options" role="radiogroup" aria-label="活動時間">
+<section id="create" class="hidden"><div class="card"><h3>🗓️ 予定をまとめて登録</h3><p class="muted">カレンダーの日付をタップすると予定日が追加されます。複数日選択でき、もう一度タップすると解除できます。</p><div class="create-calendar" aria-label="活動日付の選択"><div class="create-calendar-header"><button type="button" id="calendarPrev" aria-label="前の月">‹</button><strong id="calendarMonth"></strong><button type="button" id="calendarNext" aria-label="次の月">›</button></div><div class="create-calendar-weekdays"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div><div id="calendarDays" class="create-calendar-days"></div></div><div class="selected-dates-heading">📅 選択した日付 <span id="selectedDateCount">0日</span></div><div id="chosenDates" class="chosen-date-list" aria-live="polite"></div><div class="fields"><div class="wide"><div class="time-title">🎭 活動の種類</div><div class="time-options" role="radiogroup" aria-label="活動の種類"><label class="time-choice"><input type="radio" name="kindPreset" value="通常活動" checked><span>🐦 通常活動</span></label><label class="time-choice"><input type="radio" name="kindPreset" value="あそぼう"><span>🎈 あそぼう</span></label><label class="time-choice"><input type="radio" name="kindPreset" value="忍者"><span>🥷 忍者</span></label><label class="time-choice"><input type="radio" name="kindPreset" value="合宿"><span>🏕️ 合宿</span></label><label class="time-choice"><input type="radio" name="kindPreset" value="other"><span>✨ 自由入力</span></label></div></div><label id="customLabel" class="wide hidden">✨ イベント名<input id="customKind" placeholder="イベント名を入力してください"></label><div class="wide"><div class="time-title">🕒 活動時間</div><div class="time-options" role="radiogroup" aria-label="活動時間">
 <label class="time-choice"><input type="radio" name="timePreset" value="09:00-18:00" checked><span>9時〜18時</span></label>
 <label class="time-choice"><input type="radio" name="timePreset" value="12:00-18:00"><span>12時〜18時</span></label>
 <label class="time-choice"><input type="radio" name="timePreset" value="18:00-23:00"><span>18時〜23時</span></label>
@@ -328,10 +350,46 @@ document.querySelectorAll('input[name="timePreset"]').forEach(el=>el.addEventLis
   updateTimePreset();
 }));
 updateTimePreset();
-function redrawDates(){const root=$('chosenDates');root.replaceChildren();for(const d of [...selectedDates].sort()){const row=document.createElement('span');row.style.cssText='display:inline-flex;align-items:center;gap:6px;margin:5px;padding:6px;background:#edf4ff;border-radius:8px';row.classList.add(dateColorClass(d));row.append(document.createTextNode(dateLabel(d)));const x=document.createElement('button');x.textContent='×';x.onclick=()=>{selectedDates.delete(d);redrawDates()};row.append(x);root.append(row)}}
-$('pushdate').onclick=()=>{const d=$('pickdate').value;if(!d){alert('日付を選んでください');return}if(selectedDates.size>=50&&!selectedDates.has(d)){alert('一度に50日までです');return}selectedDates.add(d);redrawDates()};
+let calendarYear=new Date().getFullYear(),calendarMonth=new Date().getMonth();
+function calendarDateString(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
+function drawCalendar(){
+  $('calendarMonth').textContent=calendarYear+'年'+(calendarMonth+1)+'月';
+  const root=$('calendarDays');root.replaceChildren();
+  const offset=new Date(calendarYear,calendarMonth,1).getDay();
+  const days=new Date(calendarYear,calendarMonth+1,0).getDate();
+  for(let i=0;i<offset;i++){const blank=document.createElement('span');blank.className='calendar-empty';root.append(blank)}
+  const now=today();
+  for(let day=1;day<=days;day++){
+    const date=calendarDateString(calendarYear,calendarMonth,day);
+    const btn=document.createElement('button');btn.type='button';btn.className='calendar-day '+dateColorClass(date);
+    if(date===now)btn.classList.add('calendar-today');
+    if(selectedDates.has(date))btn.classList.add('calendar-selected');
+    btn.textContent=String(day);btn.setAttribute('aria-label',dateLabel(date));btn.setAttribute('aria-pressed',selectedDates.has(date)?'true':'false');
+    btn.onclick=()=>{
+      if(selectedDates.has(date))selectedDates.delete(date);
+      else{if(selectedDates.size>=50){alert('一度に50日までです');return}selectedDates.add(date)}
+      redrawDates();
+    };
+    root.append(btn);
+  }
+}
+$('calendarPrev').onclick=()=>{calendarMonth--;if(calendarMonth<0){calendarMonth=11;calendarYear--}drawCalendar()};
+$('calendarNext').onclick=()=>{calendarMonth++;if(calendarMonth>11){calendarMonth=0;calendarYear++}drawCalendar()};
+function redrawDates(){
+  const root=$('chosenDates');root.replaceChildren();
+  $('selectedDateCount').textContent=selectedDates.size+'日';
+  if(!selectedDates.size){const p=document.createElement('p');p.className='muted';p.textContent='まだ日付が選択されていません。';root.append(p)}
+  for(const d of [...selectedDates].sort()){
+    const row=document.createElement('span');row.className='chosen-date '+dateColorClass(d);
+    row.append(document.createTextNode(dateLabel(d)));
+    const x=document.createElement('button');x.type='button';x.textContent='×';x.setAttribute('aria-label',dateLabel(d)+'を解除');
+    x.onclick=()=>{selectedDates.delete(d);redrawDates()};row.append(x);root.append(row);
+  }
+  drawCalendar();
+}
+redrawDates();
 document.querySelectorAll('input[name="kindPreset"]').forEach(el=>el.addEventListener('change',()=>{$('customLabel').classList.toggle('hidden',document.querySelector('input[name="kindPreset"]:checked')?.value!=='other')}));
-$('add').onclick=async()=>{if(!profile)return;const dates=[...selectedDates];const chosenKind=document.querySelector('input[name="kindPreset"]:checked')?.value||'通常活動';const kind=chosenKind==='other'?$('customKind').value.trim():chosenKind;updateTimePreset();if(!dates.length){alert('日付を追加してください');return}if(!kind){alert('イベント名を入力してください');return}const selectedPlace=document.querySelector('input[name="placePreset"]:checked')?.value||'里山';const place=selectedPlace==='自由入力'?$('customPlace').value.trim():selectedPlace;if(!place){alert('活動場所を入力してください');return}try{await Promise.all(dates.map(date=>addDoc(collection(db,'events'),{date,start:$('start').value,end:$('end').value,place,kind,allDay:$('allDay').checked,createdBy:me.uid,createdAt:serverTimestamp()})));selectedDates.clear();redrawDates();tab='future';notify('予定を登録しました');render()}catch(e){fail(e)}};
+$('add').onclick=async()=>{if(!profile)return;const dates=[...selectedDates];const chosenKind=document.querySelector('input[name="kindPreset"]:checked')?.value||'通常活動';const kind=chosenKind==='other'?$('customKind').value.trim():chosenKind;updateTimePreset();if(!dates.length){alert('カレンダーから日付を選択してください');return}if(!kind){alert('イベント名を入力してください');return}const selectedPlace=document.querySelector('input[name="placePreset"]:checked')?.value||'里山';const place=selectedPlace==='自由入力'?$('customPlace').value.trim():selectedPlace;if(!place){alert('活動場所を入力してください');return}try{await Promise.all(dates.map(date=>addDoc(collection(db,'events'),{date,start:$('start').value,end:$('end').value,place,kind,allDay:$('allDay').checked,createdBy:me.uid,createdAt:serverTimestamp()})));selectedDates.clear();redrawDates();tab='future';notify('予定を登録しました');render()}catch(e){fail(e)}};
 
 $('savemyname').onclick=async()=>{if(!me)return;const name=$('mynameinput').value.trim();if(!name||name.length>30){alert('表示名を1〜30文字で入力してください');return}const btn=$('savemyname');btn.disabled=true;try{await setDoc(doc(db,'userProfiles',me.uid),{name,updatedAt:serverTimestamp()});myPendingName=name;if(profile){await updateDoc(doc(db,'members',me.uid),{name});profile.name=name;$('authstate').textContent='ログイン中：'+name;render()}else{$('mynamehint').textContent='登録名：'+name+'（承認を待っています）'}alert('表示名を保存しました')}catch(e){console.error(e);alert('名前を保存できませんでした。Firestoreルールを確認してください。\n'+e.message)}finally{btn.disabled=false}};
 $('addmember').onclick=async()=>{if(profile?.role!=='admin')return;const uid=$('memberuid').value.trim();if(!uid){alert('ユーザーIDを入力してください');return}if(members.some(m=>m.id===uid)){alert('この人はすでに登録済みです');return}if(members.length>=10){alert('メンバーは10人までです');return}try{const nameSnap=await getDoc(doc(db,'userProfiles',uid));const name=nameSnap.exists()?nameSnap.data().name?.trim():'';if(!name){alert('相手の名前が未登録です。本人に名前を保存してもらってください');return}await setDoc(doc(db,'members',uid),{name,role:'member',order:members.length});$('memberuid').value='';notify(name+'さんを承認しました。相手にページを再読み込みしてもらってください')}catch(e){fail(e)}};
