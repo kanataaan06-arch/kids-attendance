@@ -1,0 +1,17 @@
+{
+  "name": "キッズ活動出欠管理",
+  "short_name": "キッズ出欠",
+  "start_url": "./kids_attendance_v2.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1966d3",
+  "icons": [
+    {
+      "src": "./kids-attendance-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
