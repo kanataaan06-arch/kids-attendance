@@ -53,7 +53,8 @@ service cloud.firestore {
       allow delete: if false;
     }
     match /members/{uid} {
-      allow get, list: if instructor();
+      allow get: if instructor() || (signedIn() && request.auth.uid == uid);
+      allow list: if instructor();
       allow create, delete: if admin();
       allow update: if admin() || (instructor() && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','photoURL'])
