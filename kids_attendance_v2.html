@@ -433,7 +433,21 @@ $('memberlist').innerHTML=members.map(m=>`<article class="member-card">
   <details class="member-details"><summary>ユーザーID・管理操作</summary><div class="member-uid">${esc(m.id)}</div>${m.role!=='admin'?`<div class="member-role-control"><label for="role-${esc(m.id)}">権限</label><select id="role-${esc(m.id)}" data-member-role="${esc(m.id)}"><option value="member" ${m.role!=='parent'?'selected':''}>👤 メンバー</option><option value="parent" ${m.role==='parent'?'selected':''}>👪 保護者（閲覧のみ）</option></select></div>`:''}${m.role!=='admin'?`<button type="button" data-remove="${esc(m.id)}" class="danger">このメンバーの承認を取り消す</button>`:'<p class="small muted">管理者の承認はこの画面から取り消せません。</p>'}</details>
 </article>`).join('')}
 async function watch(){clean();let snap=await getDoc(doc(db,'members',me.uid));if(!snap.exists()){showPending();setLoading('startup',false);return}profile={id:me.uid,...snap.data()};$('mynameinput').value=profile.name||'';$('mynamehint').textContent='名前はいつでも変更できます。';$('pending').classList.add('hidden');$('app').classList.remove('hidden');$('authstate').textContent='ログイン中：'+profile.name;
-unsubs.push(onSnapshot(collection(db,'members'),s=>{members=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order??99)-(b.order??99));const own=members.find(m=>m.id===me.uid);if(own){const wasParent=profile?.role==='parent';profile={...own};$('authstate').textContent='ログイン中：'+own.name;if(profile.role==='parent'&&!wasParent){for(const stop of answerUnsubs.values())stop();answerUnsubs.clear()}if(wasParent&&profile.role!=='parent'){for(const stop of unsubs.splice(1))stop();watch();return}}render()},fail));
+// Watch the signed-in person's own role. A role change restarts subscriptions with the new permissions.
+unsubs.push(onSnapshot(doc(db,'members',me.uid),snap=>{
+  if(!snap.exists()){window.location.reload();return}
+  const next={id:me.uid,...snap.data()};
+  if(profile?.role!==next.role){window.location.reload();return}
+  profile=next;$('authstate').textContent='ログイン中：'+next.name;render();
+},fail));
+// Parents must not query the members collection, which is instructor-only in Firestore rules.
+if(profile.role!=='parent')unsubs.push(onSnapshot(collection(db,'members'),snapshot=>{
+  members=snapshot.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order??99)-(b.order??99));
+  const own=members.find(m=>m.id===me.uid);
+  if(own&&own.role!==profile?.role){window.location.reload();return}
+  if(own){profile={...own};$('authstate').textContent='ログイン中：'+own.name}
+  render();
+},fail));
 
 unsubs.push(onSnapshot(query(collection(db,'events'),where('date','>=',today())),snapshot=>{
   if(profile?.role==='parent'){for(const stop of answerUnsubs.values())stop();answerUnsubs.clear()}
