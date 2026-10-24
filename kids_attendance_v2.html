@@ -156,7 +156,7 @@ button,select,input{font:inherit;border:1px solid #cdd4df;border-radius:9px;padd
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
-import {getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,query,where,orderBy,serverTimestamp,writeBatch,Timestamp} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+import {getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,query,where,orderBy,serverTimestamp,writeBatch,Timestamp,runTransaction,arrayUnion,arrayRemove} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 const firebaseConfig={apiKey:'AIzaSyCbE1BqIxMGke2vT4FcyZKWLqQX6YmzEsU',authDomain:'kids-attendance-b89d4.firebaseapp.com',projectId:'kids-attendance-b89d4',storageBucket:'kids-attendance-b89d4.firebasestorage.app',messagingSenderId:'408668881637',appId:'1:408668881637:web:63464582c7bd720949ca0c'};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();
 const $=id=>document.getElementById(id);const loadingTasks=new Set(['startup']);function setLoading(key,active,message='読み込み中です…'){active?loadingTasks.add(key):loadingTasks.delete(key);$('loadingOverlay').classList.toggle('hidden',loadingTasks.size===0);if(active)$('loadingText').textContent=message}const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -309,46 +309,81 @@ function downloadPastCsv(chosen){
   const a=document.createElement('a');a.href=url;a.download=`キッズ活動出欠_${pastYear}年${pastMonth}月.csv`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
-const parentEndOfDay=date=>Timestamp.fromDate(new Date(date+'T23:59:59+09:00'));
-const publicScheduleData=e=>({date:e.date,dateAt:parentEndOfDay(e.date),start:e.start||'',end:e.end||'',place:e.place||'',kind:e.kind||'通常活動',allDay:!!e.allDay});
+// Public schedules expire at the event end, in Japan time.
+const publicScheduleData=e=>({date:e.date,dateAt:Timestamp.fromDate(new Date(e.allDay?e.date+'T00:00:00+09:00':e.date+'T'+e.end+':00+09:00')),start:e.start||'',end:e.end||'',place:e.place||'',kind:e.kind||'通常活動',allDay:!!e.allDay,instructorIds:[]});
+function scheduleData(e,ids=[]){const data=publicScheduleData(e);if(e.allDay)data.dateAt=Timestamp.fromMillis(data.dateAt.toMillis()+86400000);data.instructorIds=ids;return data}
 const parentScheduleRef=id=>doc(db,'parentSchedules',id);
 const publicInstructorRef=(id,uid)=>doc(db,'parentSchedules',id,'instructors',uid);
 function publicInstructorData(m){return {name:m.name||'名前未設定',photoURL:/^https:\/\/[a-z0-9.-]+\.googleusercontent\.com\//i.test(m.photoURL||'')?m.photoURL:''}}
 async function publishOwnAttendance(eventId,value){
-  const batch=writeBatch(db);
-  batch.set(doc(db,'events',eventId,'answers',me.uid),{value,updatedAt:serverTimestamp()});
-  if(value==='○')batch.set(publicInstructorRef(eventId,me.uid),publicInstructorData(profile));
-  else batch.delete(publicInstructorRef(eventId,me.uid));
-  await batch.commit();
+  await runTransaction(db,async tx=>{
+    const eventRef=doc(db,'events',eventId),scheduleRef=parentScheduleRef(eventId);
+    const event=await tx.get(eventRef),schedule=await tx.get(scheduleRef);
+    if(!event.exists())throw new Error('予定が見つかりません');
+    // A missing projection is created separately with an empty manifest first.
+    if(!schedule.exists())throw new Error('公開予定の準備中です。管理者に画面の再読み込みを依頼してください');
+    tx.set(doc(db,'events',eventId,'answers',me.uid),{value,updatedAt:serverTimestamp()});
+    tx.update(scheduleRef,{instructorIds:value==='○'?arrayUnion(me.uid):arrayRemove(me.uid)});
+    if(value==='○')tx.set(publicInstructorRef(eventId,me.uid),publicInstructorData(profile));
+    else tx.delete(publicInstructorRef(eventId,me.uid));
+  });
+}
+async function updateEventWithSchedule(id,changes){
+  await runTransaction(db,async tx=>{const ref=doc(db,'events',id),pub=parentScheduleRef(id);
+    const event=await tx.get(ref),schedule=await tx.get(pub);
+    if(!event.exists())throw new Error('予定が見つかりません');
+    const next={...event.data(),...changes};tx.update(ref,changes);
+    tx.set(pub,scheduleData(next,schedule.exists()?schedule.data().instructorIds||[]:[]));
+  });
 }
 async function syncPublicSchedule(e){
   if(profile?.role!=='admin')return;
-  const ref=parentScheduleRef(e.id),data=publicScheduleData(e),snap=await getDoc(ref);
-  if(!snap.exists()||['date','start','end','place','kind','allDay'].some(k=>snap.data()[k]!==data[k]))await setDoc(ref,data);
+  await runTransaction(db,async tx=>{const event=await tx.get(doc(db,'events',e.id)),ref=parentScheduleRef(e.id),snap=await tx.get(ref);
+    if(!event.exists())return;
+    const data=scheduleData(event.data(),snap.exists()?snap.data().instructorIds||[]:[]);
+    if(!snap.exists()||['date','start','end','place','kind','allDay'].some(k=>snap.data()[k]!==data[k])||snap.data().dateAt?.toMillis()!==data.dateAt.toMillis()||!Array.isArray(snap.data().instructorIds))tx.set(ref,data);
+  });
 }
 async function syncPublicInstructor(e,m){
   if(profile?.role!=='admin')return;
-  const ref=publicInstructorRef(e.id,m.id),snap=await getDoc(ref);
-  const expected=e.answers?.[m.id]==='○'&&m.role!=='parent'?publicInstructorData(m):null;
-  if(expected){if(!snap.exists()||snap.data().name!==expected.name||snap.data().photoURL!==expected.photoURL)await setDoc(ref,expected)}
-  else if(snap.exists())await deleteDoc(ref);
+  const ref=publicInstructorRef(e.id,m.id);const [snap,schedule]=await Promise.all([getDoc(ref),getDoc(parentScheduleRef(e.id))]);if(!schedule.exists())return;const ids=schedule.data().instructorIds||[];
+  const expected=e.answers?.[m.id]==='○'&&['admin','member'].includes(m.role)?publicInstructorData(m):null;
+  const batch=writeBatch(db);
+  if(expected){if(!snap.exists()||snap.data().name!==expected.name||snap.data().photoURL!==expected.photoURL)batch.set(ref,expected);
+    if(!ids.includes(m.id))batch.update(parentScheduleRef(e.id),{instructorIds:arrayUnion(m.id)});
+  }else{if(snap.exists())batch.delete(ref);if(ids.includes(m.id))batch.update(parentScheduleRef(e.id),{instructorIds:arrayRemove(m.id)});}
+  await batch.commit();
 }
 function watchParentSchedules(){
-  const cutoff=parentEndOfDay(today());
+  // A future query bound fails closed if a device clock is behind the server.
+  const cutoff=Timestamp.fromMillis(Math.ceil((Date.now()+1000)/60000)*60000);
   unsubs.push(onSnapshot(query(collection(db,'parentSchedules'),where('dateAt','>=',cutoff)),snapshot=>{
-    const liveIds=new Set(snapshot.docs.map(d=>d.id));
-    for(const [id,stop] of answerUnsubs)if(!liveIds.has(id)){stop();answerUnsubs.delete(id)}
-    events=snapshot.docs.map(d=>({id:d.id,...d.data(),instructors:events.find(e=>e.id===d.id)?.instructors||[]}));
-    for(const event of events){
-      if(answerUnsubs.has(event.id))continue;
-      const id=event.id;
-      answerUnsubs.set(id,onSnapshot(collection(db,'parentSchedules',id,'instructors'),people=>{
-        const current=events.find(e=>e.id===id);
-        if(current){current.instructors=people.docs.map(d=>({id:d.id,...d.data()}));render()}
-      },fail));
+    for(const stop of answerUnsubs.values())stop();answerUnsubs.clear();
+    events=snapshot.docs.map(d=>({id:d.id,...d.data(),instructors:[]}));
+    for(const event of events)for(const uid of new Set(event.instructorIds||[])){
+      const key=event.id+'/'+uid;
+      answerUnsubs.set(key,onSnapshot(publicInstructorRef(event.id,uid),person=>{
+        const current=events.find(e=>e.id===event.id);if(!current)return;
+        current.instructors=current.instructors.filter(m=>m.id!==uid);
+        if(person.exists())current.instructors.push({id:uid,...person.data()});render();
+      },error=>{
+        const current=events.find(e=>e.id===event.id);if(current){current.instructors=current.instructors.filter(m=>m.id!==uid);render()}
+        if(error.code!=='permission-denied')fail(error);
+      }));
     }
     render();setLoading('startup',false);
   },e=>{setLoading('startup',false);fail(e)}));
+  const timer=setInterval(()=>{if(profile?.role==='parent')watch().catch(fail)},60000);
+  unsubs.push(()=>clearInterval(timer));
+  const expiryTimer=setInterval(()=>{if(profile?.role==='parent')render()},1000);unsubs.push(()=>clearInterval(expiryTimer));
+}
+async function loadAccessRole(){
+  const ref=doc(db,'accessStatus',me.uid);
+  try{const snap=await getDoc(ref);if(snap.exists())return snap.data().role}catch(e){if(e.code!=='permission-denied')throw e}
+  // Rules permit only the role already recorded by the administrator in members.
+  // The role-only document provides no route to self-approval or promotion.
+  for(const role of ['parent','member','admin'])try{await setDoc(ref,{role});return role}catch(e){if(e.code!=='permission-denied')throw e}
+  return null;
 }
 
 function renderFuture(future){
@@ -436,7 +471,7 @@ async function executeBulkDelete(){
   let done=0;const errors=[];
   // Optimize only deletion. Keep the proven login and Firestore listeners unchanged.
   // Five events per batch reduces round trips while keeping writes well below Firestore limits.
-  const groups=[];for(let i=0;i<targets.length;i+=10)groups.push(targets.slice(i,i+10));
+  const groups=[];for(let i=0;i<targets.length;i+=5)groups.push(targets.slice(i,i+5));
   let nextGroup=0;
   async function deleteWorker(){
     while(nextGroup<groups.length){
@@ -472,20 +507,19 @@ async function executeBulkDelete(){
     else notify(done+'件の予定と出欠回答を削除しました');
   }finally{deleteBusy=false;setLoading('bulkDelete',false);render();}
 }
-function render(){if(!profile||!me)return;const parent=profile.role==='parent';if(parent&&tab!=='future')tab='future';let ts=today(),sorted=[...events].sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start));let future=sorted.filter(e=>e.date>=ts),past=sorted.filter(e=>e.date<ts).reverse();for(let t of ['future','bulk','create','past','members','deleteManager']){$(t).classList.toggle('hidden',t!==tab||(parent&&t!=='future'));document.querySelector(`[data-tab="${t}"]`)?.classList.toggle('active',t===tab);document.querySelector(`[data-tab="${t}"]`)?.setAttribute('aria-current',t===tab?'page':'false')}document.querySelectorAll('.tabs [data-tab]').forEach(el=>el.classList.toggle('hidden',parent&&el.dataset.tab!=='future'));document.querySelector('.tabs').classList.toggle('hidden',parent);$('membersTab').classList.toggle('hidden',profile.role!=='admin');$('deleteManagerTab').classList.toggle('hidden',profile.role!=='admin');document.querySelector('.tabs')?.classList.toggle('member-only-tabs',profile.role!=='admin');if(profile.role!=='admin'&&(tab==='members'||tab==='deleteManager')){tab='future';return render()}renderFuture(future);if(parent){$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('myname').classList.add('hidden');$('parentLogout').classList.remove('hidden');return}$('parentLogout').classList.add('hidden');$('myname').classList.remove('hidden');renderUnanswered(future);if(tab==='past')renderPast();if(profile.role==='admin'&&tab==='deleteManager')renderDeleteManager();$('bulk').innerHTML=`<div class="card"><h3>${esc(profile.name)}の出欠をまとめて回答</h3><p class="muted">○・△・×をタップして選択し、最後に「まとめて保存」を押してください。</p>${future.map(e=>`<div class="bulk-entry"><div class="bulk-info"><strong class="${dateColorClass(e.date)}">${dateLabel(e.date)}</strong><span class="small">${e.allDay?"終日":esc(e.start)} ${esc(e.kind||"通常活動")}・${esc(e.place)}</span></div><div class="bulk-options" role="radiogroup" aria-label="${esc(e.date)}の出欠">${['○','△','×'].map(v=>`<label class="bulk-choice"><input type="radio" class="bulk-answer" name="bulk-${esc(e.id)}" data-id="${esc(e.id)}" value="${v}" ${v===(bulkDrafts.has(e.id)?bulkDrafts.get(e.id):e.answers?.[me.uid])?'checked':''}><span>${v}</span></label>`).join('')}</div></div>`).join('')}<div class="row"><button class="primary" id="savebulk">まとめて保存</button></div></div>`;$('savebulk').onclick=async()=>{if(profile?.role==='parent')return;const entries=[...document.querySelectorAll('.bulk-answer:checked')];const btn=$('savebulk');btn.disabled=true;try{await Promise.all(entries.map(el=>publishOwnAttendance(el.dataset.id,el.value)));bulkDrafts.clear();notify('出欠を保存しました');render();window.scrollTo({top:0,behavior:'smooth'})}catch(e){fail(e)}finally{btn.disabled=false}};
+function render(){if(!profile||!me)return;const parent=profile.role==='parent';if(parent&&tab!=='future')tab='future';let ts=today(),sorted=[...events].sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start));let future=sorted.filter(e=>profile.role==='parent'?e.dateAt?.toMillis()>Date.now():e.date>=ts),past=sorted.filter(e=>e.date<ts).reverse();for(let t of ['future','bulk','create','past','members','deleteManager']){$(t).classList.toggle('hidden',t!==tab||(parent&&t!=='future'));document.querySelector(`[data-tab="${t}"]`)?.classList.toggle('active',t===tab);document.querySelector(`[data-tab="${t}"]`)?.setAttribute('aria-current',t===tab?'page':'false')}document.querySelectorAll('.tabs [data-tab]').forEach(el=>el.classList.toggle('hidden',parent&&el.dataset.tab!=='future'));document.querySelector('.tabs').classList.toggle('hidden',parent);$('membersTab').classList.toggle('hidden',profile.role!=='admin');$('deleteManagerTab').classList.toggle('hidden',profile.role!=='admin');document.querySelector('.tabs')?.classList.toggle('member-only-tabs',profile.role!=='admin');if(profile.role!=='admin'&&(tab==='members'||tab==='deleteManager')){tab='future';return render()}renderFuture(future);if(parent){$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('myname').classList.add('hidden');$('parentLogout').classList.remove('hidden');return}$('parentLogout').classList.add('hidden');$('myname').classList.remove('hidden');renderUnanswered(future);if(tab==='past')renderPast();if(profile.role==='admin'&&tab==='deleteManager')renderDeleteManager();$('bulk').innerHTML=`<div class="card"><h3>${esc(profile.name)}の出欠をまとめて回答</h3><p class="muted">○・△・×をタップして選択し、最後に「まとめて保存」を押してください。</p>${future.map(e=>`<div class="bulk-entry"><div class="bulk-info"><strong class="${dateColorClass(e.date)}">${dateLabel(e.date)}</strong><span class="small">${e.allDay?"終日":esc(e.start)} ${esc(e.kind||"通常活動")}・${esc(e.place)}</span></div><div class="bulk-options" role="radiogroup" aria-label="${esc(e.date)}の出欠">${['○','△','×'].map(v=>`<label class="bulk-choice"><input type="radio" class="bulk-answer" name="bulk-${esc(e.id)}" data-id="${esc(e.id)}" value="${v}" ${v===(bulkDrafts.has(e.id)?bulkDrafts.get(e.id):e.answers?.[me.uid])?'checked':''}><span>${v}</span></label>`).join('')}</div></div>`).join('')}<div class="row"><button class="primary" id="savebulk">まとめて保存</button></div></div>`;$('savebulk').onclick=async()=>{if(profile?.role==='parent')return;const entries=[...document.querySelectorAll('.bulk-answer:checked')];const btn=$('savebulk');btn.disabled=true;try{await Promise.all(entries.map(el=>publishOwnAttendance(el.dataset.id,el.value)));bulkDrafts.clear();notify('出欠を保存しました');render();window.scrollTo({top:0,behavior:'smooth'})}catch(e){fail(e)}finally{btn.disabled=false}};
 $('memberCount').textContent=members.length+' / 10人';
 $('memberlist').innerHTML=members.map(m=>`<article class="member-card">
   <div class="member-card-top">${memberAvatar(m)}<div class="member-card-name"><strong>${esc(m.name||'名前未設定')}</strong><span>${m.role==='admin'?'👑 管理者':m.role==='parent'?'👪 保護者':'👤 メンバー'}</span></div><span class="member-approved">✓ 承認済み</span></div>
   <details class="member-details"><summary>ユーザーID・管理操作</summary><div class="member-uid">${esc(m.id)}</div>${m.role!=='admin'?`<div class="member-role-control"><label for="role-${esc(m.id)}">権限</label><select id="role-${esc(m.id)}" data-member-role="${esc(m.id)}"><option value="member" ${m.role!=='parent'?'selected':''}>👤 メンバー</option><option value="parent" ${m.role==='parent'?'selected':''}>👪 保護者（閲覧のみ）</option></select></div>`:''}${m.role!=='admin'?`<button type="button" data-remove="${esc(m.id)}" class="danger">このメンバーの承認を取り消す</button>`:'<p class="small muted">管理者の承認はこの画面から取り消せません。</p>'}</details>
 </article>`).join('')}
-async function watch(){clean();let snap=await getDoc(doc(db,'members',me.uid));if(!snap.exists()){showPending();setLoading('startup',false);return}profile={id:me.uid,...snap.data()};$('mynameinput').value=profile.name||'';$('mynamehint').textContent='名前はいつでも変更できます。';$('pending').classList.add('hidden');$('app').classList.remove('hidden');$('authstate').textContent='ログイン中：'+profile.name;
-// Watch the signed-in person's own role. A role change restarts subscriptions with the new permissions.
-unsubs.push(onSnapshot(doc(db,'members',me.uid),snap=>{
-  if(!snap.exists()){window.location.reload();return}
-  const next={id:me.uid,...snap.data()};
-  if(profile?.role!==next.role){window.location.reload();return}
-  profile=next;$('authstate').textContent='ログイン中：'+next.name;render();
-},fail));
+async function watch(){clean();const accessRole=await loadAccessRole();if(!accessRole){showPending();setLoading('startup',false);return}
+if(accessRole==='parent')profile={id:me.uid,role:'parent',name:'保護者'};
+else {const snap=await getDoc(doc(db,'members',me.uid));if(!snap.exists()){showPending();setLoading('startup',false);return}profile={id:me.uid,...snap.data()}}
+$('mynameinput').value=profile.name||'';$('mynamehint').textContent='名前はいつでも変更できます。';$('pending').classList.add('hidden');$('app').classList.remove('hidden');$('authstate').textContent='ログイン中：'+profile.name;
+unsubs.push(onSnapshot(doc(db,'accessStatus',me.uid),snap=>{
+  if(!snap.exists()||profile?.role!==snap.data().role){watch().catch(fail)}
+},error=>{if(error.code==='permission-denied')watch().catch(fail);else fail(error)}));
 if(profile.role==='parent'){watchParentSchedules();return}
 unsubs.push(onSnapshot(collection(db,'members'),snapshot=>{
   members=snapshot.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order??99)-(b.order??99));
@@ -516,7 +550,7 @@ unsubs.push(onSnapshot(query(collection(db,'events'),where('date','>=',today()))
 
 function showPending(){$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('app').classList.add('hidden');$('pending').classList.remove('hidden');$('uid').textContent=me.uid;$('authstate').textContent='承認待ち';$('mynamehint').textContent=myPendingName?'登録名：'+myPendingName+'（承認を待っています）':'先に表示名を登録してください。';}
 $('login').onclick=async()=>{try{await signInWithPopup(auth,provider)}catch(e){if(e.code==='auth/popup-blocked'){await signInWithRedirect(auth,provider)}else{alert('ログインに失敗しました：'+e.message)}}};$('logout').onclick=()=>signOut(auth);$('parentLogoutButton').onclick=()=>signOut(auth);$('copyuid').onclick=()=>navigator.clipboard.writeText(me.uid).then(()=>alert('コピーしました')).catch(()=>alert('コピーできない場合は表示されたIDを選択してください'));
-onAuthStateChanged(auth,async user=>{clean();me=user;$('login').classList.toggle('hidden',!!user);$('logout').classList.toggle('hidden',!user);const avatar=$('authavatar');const url=user?.photoURL||'';const safe=/^https:\/\/(?:lh[0-9]+\.googleusercontent\.com|[a-z0-9.-]+\.googleusercontent\.com)\//i.test(url);avatar.classList.toggle('hidden',!safe);avatar.onerror=()=>avatar.classList.add('hidden');if(safe)avatar.src=url;else avatar.removeAttribute('src');if(!user){$('parentLogout').classList.add('hidden');setLoading('startup',false);$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('myname').classList.add('hidden');$('authstate').textContent='ログインしてください';$('app').classList.add('hidden');$('pending').classList.add('hidden');return}try{$('myname').classList.remove('hidden');const nameSnap=await getDoc(doc(db,'userProfiles',user.uid));myPendingName=nameSnap.exists()?nameSnap.data().name||'':'';$('mynameinput').value=myPendingName;await watch();if(user.photoURL&&profile&&profile.photoURL!==user.photoURL){try{await updateDoc(doc(db,'members',user.uid),{photoURL:user.photoURL})}catch(err){console.warn('プロフィール画像の保存にはFirestoreルールの更新が必要です',err)}}}catch(e){setLoading('startup',false);showPending();console.error(e);$('mynamehint').textContent='プロフィールを読み込めません。Firestoreルールを確認してください。'}});getRedirectResult(auth).catch(console.error);
+onAuthStateChanged(auth,async user=>{clean();me=user;$('login').classList.toggle('hidden',!!user);$('logout').classList.toggle('hidden',!user);const avatar=$('authavatar');const url=user?.photoURL||'';const safe=/^https:\/\/(?:lh[0-9]+\.googleusercontent\.com|[a-z0-9.-]+\.googleusercontent\.com)\//i.test(url);avatar.classList.toggle('hidden',!safe);avatar.onerror=()=>avatar.classList.add('hidden');if(safe)avatar.src=url;else avatar.removeAttribute('src');if(!user){$('parentLogout').classList.add('hidden');setLoading('startup',false);$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('myname').classList.add('hidden');$('authstate').textContent='ログインしてください';$('app').classList.add('hidden');$('pending').classList.add('hidden');return}try{$('myname').classList.remove('hidden');const nameSnap=await getDoc(doc(db,'userProfiles',user.uid)).catch(e=>{if(e.code==='permission-denied')return {exists:()=>false};throw e});myPendingName=nameSnap.exists()?nameSnap.data().name||'':'';$('mynameinput').value=myPendingName;await watch();if(user.photoURL&&profile&&profile.role!=='parent'&&profile.photoURL!==user.photoURL){try{await updateDoc(doc(db,'members',user.uid),{photoURL:user.photoURL})}catch(err){console.warn('プロフィール画像の保存にはFirestoreルールの更新が必要です',err)}}}catch(e){setLoading('startup',false);showPending();console.error(e);$('mynamehint').textContent='プロフィールを読み込めません。Firestoreルールを確認してください。'}});getRedirectResult(auth).catch(console.error);
 $('refreshLogo').addEventListener('click',()=>window.location.reload());
 document.addEventListener('click',async ev=>{let b=ev.target.closest('button');if(!b||!profile)return;if(b.dataset.openEvent){
   const selectedEvent=events.find(e=>e.id===b.dataset.openEvent);
@@ -541,18 +575,18 @@ document.addEventListener('click',async ev=>{let b=ev.target.closest('button');i
       }
       await batch.commit();
     }
-    await deleteDoc(doc(db,'members',departing.id));
+    const revoke=writeBatch(db);revoke.delete(doc(db,'members',departing.id));revoke.delete(doc(db,'accessStatus',departing.id));await revoke.commit();
     notify(`${departing.name}さんの承認を解除しました。過去の活動記録は保存されています。`);
   }catch(e){fail(e)}finally{b.disabled=false}
 }});
 document.addEventListener('change',async ev=>{let el=ev.target;if(el.classList.contains('bulk-answer')){bulkDrafts.set(el.dataset.id,el.value);return}if(!profile||profile.role!=='admin')return;
-if(el.dataset.memberRole){const member=members.find(m=>m.id===el.dataset.memberRole);if(!member||member.role==='admin')return;const newRole=el.value;if(!['member','parent'].includes(newRole))return;const oldRole=member.role==='parent'?'parent':'member';if(newRole===oldRole)return;el.disabled=true;try{await updateDoc(doc(db,'members',member.id),{role:newRole});if(newRole==='parent')await Promise.all(events.map(async e=>{const ref=publicInstructorRef(e.id,member.id);if((await getDoc(ref)).exists())await deleteDoc(ref)}));notify(`${member.name}さんの権限を「${newRole==='parent'?'保護者':'メンバー'}」に変更しました`)}catch(e){el.value=oldRole;fail(e)}finally{el.disabled=false}return}
+if(el.dataset.memberRole){const member=members.find(m=>m.id===el.dataset.memberRole);if(!member||member.role==='admin')return;const newRole=el.value;if(!['member','parent'].includes(newRole))return;const oldRole=member.role==='parent'?'parent':'member';if(newRole===oldRole)return;el.disabled=true;try{const roles=writeBatch(db);roles.update(doc(db,'members',member.id),{role:newRole});roles.set(doc(db,'accessStatus',member.id),{role:newRole});await roles.commit();if(newRole==='parent')await Promise.all(events.map(async e=>{const ref=publicInstructorRef(e.id,member.id);if((await getDoc(ref)).exists())await deleteDoc(ref)}));notify(`${member.name}さんの権限を「${newRole==='parent'?'保護者':'メンバー'}」に変更しました`)}catch(e){el.value=oldRole;fail(e)}finally{el.disabled=false}return}
 if(el.dataset.kindChoice){
   const id=el.dataset.kindChoice;
   const wrap=[...document.querySelectorAll('[data-custom-kind-wrap]')].find(x=>x.dataset.customKindWrap===id);
   if(wrap)wrap.classList.toggle('hidden',el.value!=='custom');
   if(el.value==='custom'){wrap?.querySelector('input')?.focus();return}
-  try{await updateDoc(doc(db,'events',id),{kind:el.value})}catch(e){fail(e)}
+  try{await updateEventWithSchedule(id,{kind:el.value})}catch(e){fail(e)}
   return;
 }
 if(el.dataset.placeChoice){
@@ -560,13 +594,13 @@ if(el.dataset.placeChoice){
   const wrap=[...document.querySelectorAll('[data-custom-place-wrap]')].find(x=>x.dataset.customPlaceWrap===id);
   if(wrap)wrap.classList.toggle('hidden',el.value!=='custom');
   if(el.value==='custom'){wrap?.querySelector('input')?.focus();return}
-  try{await updateDoc(doc(db,'events',id),{place:el.value})}catch(e){fail(e)}
+  try{await updateEventWithSchedule(id,{place:el.value})}catch(e){fail(e)}
   return;
 }
 if(!el.dataset.field)return;
 if(el.dataset.field==='place'&&!el.value.trim()){alert('活動場所を入力してください');return}
 if(el.dataset.field==='kind'&&!el.value.trim()){alert('活動名を入力してください');return}
-try{await updateDoc(doc(db,'events',el.dataset.id),{[el.dataset.field]:el.dataset.field==='allDay'?el.checked:el.value.trim()})}catch(e){fail(e)}});
+try{await updateEventWithSchedule(el.dataset.id,{[el.dataset.field]:el.dataset.field==='allDay'?el.checked:el.value.trim()})}catch(e){fail(e)}});
 
 const selectedDates=new Set();
 document.querySelectorAll('input[name="placePreset"]').forEach(el=>el.addEventListener('change',()=>{
@@ -624,9 +658,9 @@ function redrawDates(){
 }
 redrawDates();
 document.querySelectorAll('input[name="kindPreset"]').forEach(el=>el.addEventListener('change',()=>{$('customLabel').classList.toggle('hidden',document.querySelector('input[name="kindPreset"]:checked')?.value!=='other')}));
-$('add').onclick=async()=>{if(!profile||profile.role==='parent')return;const dates=[...selectedDates];const chosenKind=document.querySelector('input[name="kindPreset"]:checked')?.value||'通常活動';const kind=chosenKind==='other'?$('customKind').value.trim():chosenKind;updateTimePreset();if(!dates.length){alert('カレンダーから日付を選択してください');return}if(!kind){alert('イベント名を入力してください');return}const selectedPlace=document.querySelector('input[name="placePreset"]:checked')?.value||'里山';const place=selectedPlace==='自由入力'?$('customPlace').value.trim():selectedPlace;if(!place){alert('活動場所を入力してください');return}try{await Promise.all(dates.map(async date=>{const event={date,start:$('start').value,end:$('end').value,place,kind,allDay:$('allDay').checked,createdBy:me.uid,createdAt:serverTimestamp()};const ref=doc(collection(db,'events')),batch=writeBatch(db);batch.set(ref,event);batch.set(parentScheduleRef(ref.id),publicScheduleData(event));await batch.commit()}));selectedDates.clear();redrawDates();notify('予定を登録しました');render();window.scrollTo({top:0,behavior:'smooth'})}catch(e){fail(e)}};
+$('add').onclick=async()=>{if(!profile||profile.role==='parent')return;const dates=[...selectedDates];const chosenKind=document.querySelector('input[name="kindPreset"]:checked')?.value||'通常活動';const kind=chosenKind==='other'?$('customKind').value.trim():chosenKind;updateTimePreset();if(!dates.length){alert('カレンダーから日付を選択してください');return}if(!kind){alert('イベント名を入力してください');return}const selectedPlace=document.querySelector('input[name="placePreset"]:checked')?.value||'里山';const place=selectedPlace==='自由入力'?$('customPlace').value.trim():selectedPlace;if(!place){alert('活動場所を入力してください');return}try{await Promise.all(dates.map(async date=>{const event={date,start:$('start').value,end:$('end').value,place,kind,allDay:$('allDay').checked,createdBy:me.uid,createdAt:serverTimestamp()};const ref=doc(collection(db,'events')),batch=writeBatch(db);batch.set(ref,event);batch.set(parentScheduleRef(ref.id),scheduleData(event));await batch.commit()}));selectedDates.clear();redrawDates();notify('予定を登録しました');render();window.scrollTo({top:0,behavior:'smooth'})}catch(e){fail(e)}};
 
 $('savemyname').onclick=async()=>{if(!me||profile?.role==='parent')return;const name=$('mynameinput').value.trim();if(!name||name.length>30){alert('表示名を1〜30文字で入力してください');return}const btn=$('savemyname');btn.disabled=true;try{await setDoc(doc(db,'userProfiles',me.uid),{name,updatedAt:serverTimestamp()});myPendingName=name;if(profile){await updateDoc(doc(db,'members',me.uid),{name});profile.name=name;$('authstate').textContent='ログイン中：'+name;render()}else{$('mynamehint').textContent='登録名：'+name+'（承認を待っています）'}alert('表示名を保存しました')}catch(e){console.error(e);alert('名前を保存できませんでした。Firestoreルールを確認してください。\n'+e.message)}finally{btn.disabled=false}};
-$('addmember').onclick=async()=>{if(profile?.role!=='admin')return;const uid=$('memberuid').value.trim();if(!uid){alert('ユーザーIDを入力してください');return}if(members.some(m=>m.id===uid)){alert('この人はすでに登録済みです');return}if(members.length>=10){alert('メンバーは10人までです');return}try{const nameSnap=await getDoc(doc(db,'userProfiles',uid));const name=nameSnap.exists()?nameSnap.data().name?.trim():'';if(!name){alert('相手の名前が未登録です。本人に名前を保存してもらってください');return}await setDoc(doc(db,'members',uid),{name,role:'member',order:members.length});$('memberuid').value='';notify(name+'さんを承認しました。相手にページを再読み込みしてもらってください')}catch(e){fail(e)}};
+$('addmember').onclick=async()=>{if(profile?.role!=='admin')return;const uid=$('memberuid').value.trim();if(!uid){alert('ユーザーIDを入力してください');return}if(members.some(m=>m.id===uid)){alert('この人はすでに登録済みです');return}if(members.length>=10){alert('メンバーは10人までです');return}try{const nameSnap=await getDoc(doc(db,'userProfiles',uid));const name=nameSnap.exists()?nameSnap.data().name?.trim():'';if(!name){alert('相手の名前が未登録です。本人に名前を保存してもらってください');return}const approval=writeBatch(db);approval.set(doc(db,'members',uid),{name,role:'member',order:members.length});approval.set(doc(db,'accessStatus',uid),{role:'member'});await approval.commit();$('memberuid').value='';notify(name+'さんを承認しました。相手にページを再読み込みしてもらってください')}catch(e){fail(e)}};
 
 </script></body></html>

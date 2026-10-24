@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "firebase-tools": "^15.34.1",
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.1.0"
+  },
+  "private": true,
+  "scripts": {
+    "test:rules": "firebase emulators:exec --only firestore --project demo-kids-attendance \"node tests/firestore.test.mjs && node tests/client.test.mjs\""
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

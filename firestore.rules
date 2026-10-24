@@ -1,126 +1,124 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() {
-      return request.auth != null;
-    }
+    function signedIn() { return request.auth != null; }
     function approved() {
-      return signedIn()
-        && exists(/databases/$(database)/documents/members/$(request.auth.uid));
+      return signedIn() && exists(/databases/$(database)/documents/members/$(request.auth.uid));
     }
-    function role() {
-      return get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role;
-    }
-    function instructor() {
-      return approved() && role() in ['admin', 'member'];
-    }
-    function admin() {
-      return approved() && role() == 'admin';
-    }
-    function parent() {
-      return approved() && role() == 'parent';
-    }
+    function role() { return get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role; }
+    function instructor() { return approved() && role() in ['admin', 'member']; }
+    function admin() { return approved() && role() == 'admin'; }
+    function parent() { return approved() && role() == 'parent'; }
     function validName() {
-      return request.resource.data.name is string
-        && request.resource.data.name.size() >= 1
+      return request.resource.data.name is string && request.resource.data.name.size() >= 1
         && request.resource.data.name.size() <= 30;
     }
-    function validPhotoURL() {
-      return !('photoURL' in request.resource.data)
-        || (
-          request.resource.data.photoURL is string
-          && request.resource.data.photoURL.size() <= 2048
-          && request.resource.data.photoURL.matches(
-            '^https://[a-zA-Z0-9.-]+\\.googleusercontent\\.com/.*$'
-          )
-        );
+    function safePhoto(url) {
+      return url is string && url.size() <= 2048
+        && (url == '' || url.matches('^https://[a-zA-Z0-9.-]+\\.googleusercontent\\.com/.*$'));
+    }
+    function endOfEvent(e) {
+      let d = e.date.split('-');
+      let t = e.get('end', '').split(':');
+      let midnight = timestamp.date(int(d[0]), int(d[1]), int(d[2]));
+      return e.get('allDay', false) ? midnight + duration.value(15, 'h')
+        : midnight + duration.value(int(t[0]) - 9, 'h') + duration.value(int(t[1]), 'm');
+    }
+    function matchesEvent(p, e) {
+      return p.keys().hasOnly(['date','dateAt','start','end','place','kind','allDay','instructorIds'])
+        && p.keys().hasAll(['date','dateAt','start','end','place','kind','allDay','instructorIds'])
+        && p.date is string && p.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && p.dateAt is timestamp && p.start is string && p.end is string
+        && p.place is string && p.kind is string && p.allDay is bool
+        && p.instructorIds is list && p.instructorIds.size() <= 100
+        && p.date == e.date && p.start == e.get('start','') && p.end == e.get('end','')
+        && p.place == e.get('place','') && p.kind == e.get('kind','通常活動')
+        && p.allDay == e.get('allDay',false) && p.dateAt == endOfEvent(e);
+    }
+    // Authentication metadata only. Never used as the authorization source.
+    match /accessStatus/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid && approved() && resource.data.role == role();
+      allow list: if false;
+      allow create, update: if signedIn() && (request.auth.uid == uid || admin())
+        && request.resource.data.keys().hasOnly(['role'])
+        && request.resource.data.role in ['admin','member','parent']
+        && request.resource.data.role == getAfter(/databases/$(database)/documents/members/$(uid)).data.role;
+      allow delete: if admin();
     }
     match /userProfiles/{uid} {
-      allow read: if signedIn()
-        && (request.auth.uid == uid || admin());
-      allow create, update: if signedIn()
-        && request.auth.uid == uid
-        && (!approved() || instructor())
-        && request.resource.data.keys().hasOnly(['name', 'updatedAt'])
-        && request.resource.data.keys().hasAll(['name', 'updatedAt'])
-        && validName();
+      allow get: if signedIn() && (admin() || (request.auth.uid == uid && (!approved() || instructor())));
+      allow list: if admin();
+      allow create, update: if signedIn() && request.auth.uid == uid && (!approved() || instructor())
+        && request.resource.data.keys().hasOnly(['name','updatedAt'])
+        && request.resource.data.keys().hasAll(['name','updatedAt']) && validName();
       allow delete: if false;
     }
     match /members/{uid} {
-      allow get: if signedIn()
-        && (request.auth.uid == uid || instructor());
-      allow list: if instructor();
+      allow get, list: if instructor();
       allow create, delete: if admin();
-      allow update: if admin()
-        || (
-          instructor()
-          && request.auth.uid == uid
-          && request.resource.data.diff(resource.data)
-              .affectedKeys().hasOnly(['name', 'photoURL'])
-          && validName()
-          && validPhotoURL()
-        );
+      allow update: if admin() || (instructor() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','photoURL'])
+        && validName() && safePhoto(request.resource.data.get('photoURL','')));
     }
     match /places/{placeId} {
       allow read, create: if instructor();
       allow update, delete: if admin();
     }
-    // Full event details and answer records are private to instructors.
     match /events/{eventId} {
       allow read: if instructor();
-      allow create: if instructor();
-      allow update, delete: if admin();
+      allow create: if instructor() && matchesEvent(
+        getAfter(/databases/$(database)/documents/parentSchedules/$(eventId)).data, request.resource.data);
+      allow update: if admin() && (
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['date','start','end','place','kind','allDay'])
+        || matchesEvent(getAfter(/databases/$(database)/documents/parentSchedules/$(eventId)).data, request.resource.data));
+      allow delete: if admin() && !existsAfter(/databases/$(database)/documents/parentSchedules/$(eventId));
       match /answers/{uid} {
         allow read: if instructor();
-        allow create, update: if instructor()
-          && request.auth.uid == uid
-          && request.resource.data.keys().hasOnly(['value', 'updatedAt'])
-          && request.resource.data.value in ['○', '△', '×'];
-        allow delete: if instructor()
-          && (request.auth.uid == uid || admin());
+        allow create, update: if instructor() && request.auth.uid == uid
+          && exists(/databases/$(database)/documents/events/$(eventId))
+          && request.resource.data.keys().hasOnly(['value','updatedAt'])
+          && request.resource.data.keys().hasAll(['value','updatedAt'])
+          && request.resource.data.value in ['○','△','×'];
+        allow delete: if instructor() && (request.auth.uid == uid || admin());
       }
     }
-    // Separate public-safe schedule: no attendance status or private member data.
     match /parentSchedules/{eventId} {
-      allow get, list: if instructor()
-        || (parent() && resource.data.dateAt is timestamp
-          && resource.data.dateAt >= request.time);
-      allow create: if instructor()
-        && request.resource.data.keys().hasOnly(
-          ['date', 'dateAt', 'start', 'end', 'place', 'kind', 'allDay'])
-        && request.resource.data.date is string
-        && request.resource.data.dateAt is timestamp
-        && request.resource.data.start is string
-        && request.resource.data.end is string
-        && request.resource.data.place is string
-        && request.resource.data.kind is string
-        && request.resource.data.allDay is bool
-        && getAfter(/databases/$(database)/documents/events/$(eventId)).data.date
-          == request.resource.data.date;
-      allow update: if admin()
-        && request.resource.data.keys().hasOnly(
-          ['date', 'dateAt', 'start', 'end', 'place', 'kind', 'allDay']);
-      allow delete: if admin();
-
+      allow get, list: if instructor() || (parent() && resource.data.dateAt > request.time);
+      allow create: if instructor() && matchesEvent(request.resource.data,
+        getAfter(/databases/$(database)/documents/events/$(eventId)).data)
+        && (admin() || request.resource.data.instructorIds == []);
+      allow update: if instructor() && matchesEvent(request.resource.data,
+        getAfter(/databases/$(database)/documents/events/$(eventId)).data)
+        && (admin() || (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['instructorIds'])
+          && request.resource.data.instructorIds.removeAll([request.auth.uid]) == resource.data.instructorIds.removeAll([request.auth.uid])
+          && (!(request.auth.uid in request.resource.data.instructorIds)
+            || getAfter(/databases/$(database)/documents/events/$(eventId)/answers/$(request.auth.uid)).data.value == '○')
+        ));
+      allow delete: if admin() && !existsAfter(/databases/$(database)/documents/events/$(eventId));
       match /instructors/{uid} {
-        allow get, list: if instructor()
-          || (parent()
-            && get(/databases/$(database)/documents/parentSchedules/$(eventId)).data.dateAt >= request.time);
-        allow create, update: if instructor()
-          && (request.auth.uid == uid || admin())
-          && request.resource.data.keys().hasOnly(['name', 'photoURL'])
-          && request.resource.data.keys().hasAll(['name', 'photoURL'])
-          && request.resource.data.name is string
-          && request.resource.data.name.size() >= 1
-          && request.resource.data.photoURL is string
-          && request.resource.data.photoURL.size() <= 2048
-          && exists(/databases/$(database)/documents/members/$(uid))
+        function confirmedPublic() {
+          let p = get(/databases/$(database)/documents/parentSchedules/$(eventId)).data;
+          let e = get(/databases/$(database)/documents/events/$(eventId)).data;
+          let m = get(/databases/$(database)/documents/members/$(uid)).data;
+          return p.dateAt > request.time && matchesEvent(p,e)
+            && m.role in ['admin','member']
+            && get(/databases/$(database)/documents/events/$(eventId)/answers/$(uid)).data.value == '○'
+            && resource.data.keys().hasOnly(['name','photoURL'])
+            && resource.data.name == m.name && resource.data.photoURL == m.get('photoURL','')
+            && safePhoto(resource.data.photoURL);
+        }
+        allow get: if instructor() || (parent() && confirmedPublic());
+        allow list: if instructor();
+        allow create, update: if instructor() && (request.auth.uid == uid || admin())
+          && request.resource.data.keys().hasOnly(['name','photoURL'])
+          && request.resource.data.keys().hasAll(['name','photoURL']) && validName()
+          && safePhoto(request.resource.data.photoURL)
           && get(/databases/$(database)/documents/members/$(uid)).data.role in ['admin','member']
           && request.resource.data.name == get(/databases/$(database)/documents/members/$(uid)).data.name
+          && request.resource.data.photoURL == get(/databases/$(database)/documents/members/$(uid)).data.get('photoURL','')
           && getAfter(/databases/$(database)/documents/events/$(eventId)/answers/$(uid)).data.value == '○';
-        allow delete: if admin()
-          || (instructor() && request.auth.uid == uid);
+        allow delete: if admin() || (instructor() && request.auth.uid == uid);
       }
     }
   }
