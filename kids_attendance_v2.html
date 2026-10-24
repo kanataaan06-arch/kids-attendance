@@ -309,9 +309,9 @@ function downloadPastCsv(chosen){
   const a=document.createElement('a');a.href=url;a.download=`キッズ活動出欠_${pastYear}年${pastMonth}月.csv`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
-// Public schedules expire at the event end, in Japan time.
-const publicScheduleData=e=>({date:e.date,dateAt:Timestamp.fromDate(new Date(e.allDay?e.date+'T00:00:00+09:00':e.date+'T'+e.end+':00+09:00')),start:e.start||'',end:e.end||'',place:e.place||'',kind:e.kind||'通常活動',allDay:!!e.allDay,instructorIds:[]});
-function scheduleData(e,ids=[]){const data=publicScheduleData(e);if(e.allDay)data.dateAt=Timestamp.fromMillis(data.dateAt.toMillis()+86400000);data.instructorIds=ids;return data}
+// Parent schedules remain visible until 23:59:59 Japan time on the activity date.
+const publicScheduleData=e=>({date:e.date,dateAt:Timestamp.fromDate(new Date(e.date+'T23:59:59+09:00')),start:e.start||'',end:e.end||'',place:e.place||'',kind:e.kind||'通常活動',allDay:!!e.allDay,instructorIds:[]});
+function scheduleData(e,ids=[]){const data=publicScheduleData(e);data.instructorIds=ids;return data}
 const parentScheduleRef=id=>doc(db,'parentSchedules',id);
 const publicInstructorRef=(id,uid)=>doc(db,'parentSchedules',id,'instructors',uid);
 function publicInstructorData(m){return {name:m.name||'名前未設定',photoURL:/^https:\/\/[a-z0-9.-]+\.googleusercontent\.com\//i.test(m.photoURL||'')?m.photoURL:''}}
