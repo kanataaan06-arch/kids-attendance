@@ -107,7 +107,7 @@ function japaneseHolidays(year){
   holidayCache.set(year,holidays);return holidays;
 }
 function dateColorClass(s){
-  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(s||''))return '';
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(s||''))return '';
   const d=new Date(s+'T12:00:00');
   return d.getDay()===0||d.getDay()===6||japaneseHolidays(d.getFullYear()).has(s)?'holiday-date':'weekday-date';
 }
