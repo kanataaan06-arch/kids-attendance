@@ -321,19 +321,42 @@ async function executeBulkDelete(){
   if(profile?.role!=='admin'||!deleteConfirm||deleteBusy)return;
   const targets=events.filter(e=>deleteSelection.has(e.id));if(!targets.length)return;
   if(!confirm(targets.length+'件の予定と全員の出欠回答を完全に削除します。\\n元に戻せません。実行しますか？'))return;
-  deleteBusy=true;renderDeleteManager();let done=0;
-  try{
-    for(const e of targets){
-      const answerDocs=await getDocs(collection(db,'events',e.id,'answers'));
-      const refs=answerDocs.docs.map(a=>a.ref);
-      if(refs.length>=499)throw new Error('回答が多すぎる予定があります。個別に削除してください。');
-      const batch=writeBatch(db);for(const ref of refs)batch.delete(ref);
-      batch.delete(doc(db,'events',e.id));await batch.commit();
-      deleteSelection.delete(e.id);bulkDrafts.delete(e.id);done++;
+  deleteBusy=true;renderDeleteManager();
+  let done=0;const errors=[];
+  // Optimize only deletion. Keep the proven login and Firestore listeners unchanged.
+  // Five events per batch reduces round trips while keeping writes well below Firestore limits.
+  const groups=[];for(let i=0;i<targets.length;i+=5)groups.push(targets.slice(i,i+5));
+  let nextGroup=0;
+  async function deleteWorker(){
+    while(nextGroup<groups.length){
+      const group=groups[nextGroup++];
+      try{
+        // Fetch the five answer subcollections at the same time.
+        const answers=await Promise.all(group.map(e=>getDocs(collection(db,'events',e.id,'answers'))));
+        const writeCount=group.length+answers.reduce((sum,snapshot)=>sum+snapshot.size,0);
+        if(writeCount>400)throw new Error('回答データが多すぎます。対象を減らして再実行してください。');
+        const batch=writeBatch(db);
+        group.forEach((e,i)=>{
+          answers[i].docs.forEach(answer=>batch.delete(answer.ref));
+          batch.delete(doc(db,'events',e.id));
+        });
+        // Event documents and their answers are removed atomically per group.
+        await batch.commit();
+        group.forEach(e=>{deleteSelection.delete(e.id);bulkDrafts.delete(e.id)});
+        done+=group.length;
+      }catch(error){
+        console.error('予定の一括削除に失敗:',error);
+        errors.push(error);
+      }
     }
-    deleteConfirm=false;notify(done+'件の予定と出欠回答を削除しました');
-  }catch(err){deleteConfirm=false;console.error(err);notify(done+'件を削除しましたが、残り'+(targets.length-done)+'件は削除できませんでした：'+(err?.message||String(err)),true)}
-  finally{deleteBusy=false;renderDeleteManager()}
+  }
+  try{
+    // Limit concurrency to avoid flooding Firestore and the UI.
+    await Promise.all(Array.from({length:Math.min(3,groups.length)},()=>deleteWorker()));
+    deleteConfirm=false;
+    if(errors.length)notify(done+'件を削除しました。残り'+(targets.length-done)+'件は削除できませんでした：'+(errors[0]?.message||String(errors[0])),true);
+    else notify(done+'件の予定と出欠回答を削除しました');
+  }finally{deleteBusy=false;renderDeleteManager()}
 }
 function render(){if(!profile||!me)return;let ts=today(),sorted=[...events].sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start));let future=sorted.filter(e=>e.date>=ts),past=sorted.filter(e=>e.date<ts).reverse();for(let t of ['future','bulk','create','past','members','deleteManager']){$(t).classList.toggle('hidden',t!==tab);document.querySelector(`[data-tab="${t}"]`)?.classList.toggle('active',t===tab);document.querySelector(`[data-tab="${t}"]`)?.setAttribute('aria-current',t===tab?'page':'false')}$('membersTab').classList.toggle('hidden',profile.role!=='admin');$('deleteManagerTab').classList.toggle('hidden',profile.role!=='admin');document.querySelector('.tabs')?.classList.toggle('member-only-tabs',profile.role!=='admin');if(profile.role!=='admin'&&(tab==='members'||tab==='deleteManager')){tab='future';return render()}$('future').innerHTML=future.length?future.map(card).join(''):'<div class="card">今後の活動はありません。</div>';renderUnanswered(future);renderPast(past);if(profile.role==='admin')renderDeleteManager();$('bulk').innerHTML=`<div class="card"><h3>${esc(profile.name)}の出欠をまとめて回答</h3><p class="muted">○・△・×をタップして選択し、最後に「まとめて保存」を押してください。</p>${future.map(e=>`<div class="bulk-entry"><div class="bulk-info"><strong class="${dateColorClass(e.date)}">${dateLabel(e.date)}</strong><span class="small">${e.allDay?"終日":esc(e.start)} ${esc(e.kind||"通常活動")}・${esc(e.place)}</span></div><div class="bulk-options" role="radiogroup" aria-label="${esc(e.date)}の出欠">${['○','△','×'].map(v=>`<label class="bulk-choice"><input type="radio" class="bulk-answer" name="bulk-${esc(e.id)}" data-id="${esc(e.id)}" value="${v}" ${v===(bulkDrafts.has(e.id)?bulkDrafts.get(e.id):e.answers?.[me.uid])?'checked':''}><span>${v}</span></label>`).join('')}</div></div>`).join('')}<div class="row"><button class="primary" id="savebulk">まとめて保存</button></div></div>`;$('savebulk').onclick=async()=>{const entries=[...document.querySelectorAll('.bulk-answer:checked')];const btn=$('savebulk');btn.disabled=true;try{await Promise.all(entries.map(el=>setDoc(doc(db,'events',el.dataset.id,'answers',me.uid),{value:el.value,updatedAt:serverTimestamp()})));bulkDrafts.clear();tab='future';notify('出欠を保存しました');render()}catch(e){fail(e)}finally{btn.disabled=false}};
 $('memberCount').textContent=members.length+' / 10人';
