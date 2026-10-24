@@ -38,7 +38,7 @@ button,select,input{font:inherit;border:1px solid #cdd4df;border-radius:9px;padd
 @media(max-width:680px){.activity-time{font-size:17px;padding:8px 10px;margin-top:8px;gap:7px}}
 @media(max-width:390px){.activity-time{font-size:16px;padding:7px 8px;gap:4px}}
 .activity-venue{min-width:0}
-.parent-instructors{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:13px;padding-top:11px;border-top:1px solid #e6ebf3}.parent-instructors-title{font-size:12px;font-weight:700;color:#52647b;width:100%}.parent-instructor{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:650;background:#f2f6fc;border-radius:20px;padding:5px 10px}.parent-instructor .avatar{width:24px;height:24px}.activity-avatars{display:flex;align-items:center;padding-right:4px}
+.parent-history-nav{display:flex;justify-content:flex-end;margin:10px 0}.parent-history-nav button{background:white;border:1px solid #d9e4f3;border-radius:10px;padding:10px 14px;color:#2455a3;font-weight:700}.parent-instructors{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:13px;padding-top:11px;border-top:1px solid #e6ebf3}.parent-instructors-title{font-size:12px;font-weight:700;color:#52647b;width:100%}.parent-instructor{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:650;background:#f2f6fc;border-radius:20px;padding:5px 10px}.parent-instructor .avatar{width:24px;height:24px}.activity-avatars{display:flex;align-items:center;padding-right:4px}
 .activity-avatars>span{display:inline-flex;margin-left:-5px;border:2px solid white;border-radius:50%;background:#f3f5f9}
 .activity-avatars>span:first-child{margin-left:0}
 .activity-avatars .avatar{width:29px;height:29px}
@@ -272,7 +272,7 @@ function renderPast(){
   const visible=pastKind==='all'?chosen:chosen.filter(e=>(e.kind||'通常活動')===pastKind);
   const years=Array.from({length:Math.max(1,Number(today().slice(0,4))-2018+1)},(_,i)=>String(Number(today().slice(0,4))-i));
   const months=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')).filter(m=>year<today().slice(0,4)||m<=today().slice(5,7));
-  root.innerHTML=`<div class="card past-toolbar">
+  root.innerHTML=`${profile?.role==='parent'?'<div class="parent-history-nav"><button type="button" id="parentPastLink">📚 過去の予定を見る</button></div>':''}<div class="card past-toolbar">
     <div class="past-heading"><h3>📚 過去の活動</h3><span class="past-count">${pastLoading?'読み込み中':chosen.length+'件の活動'}</span></div>
     <div class="past-month-nav"><button type="button" id="pastPrev" aria-label="前の月" ${current<='2018-01'?'disabled':''}>‹</button><strong>${year}年${Number(month)}月</strong><button type="button" id="pastNext" aria-label="次の月" ${current>=today().slice(0,7)?'disabled':''}>›</button></div>
     <details class="past-more-options ${profile.role==='parent'?'hidden':''}" id="pastMoreOptions" ${pastOptionsOpen?'open':''}><summary>絞り込み・CSV出力などの詳細設定</summary>
@@ -281,6 +281,7 @@ function renderPast(){
     <button type="button" class="past-export" id="downloadPastCsv" ${pastLoading?'disabled':''}>⬇ この月のCSVをダウンロード</button>
     </details>
   </div>${pastLoading?'<div class="card">活動履歴を読み込み中です…</div>':visible.length?visible.map(card).join(''):'<div class="card">この月の活動はありません。</div>'}`;
+  if(profile.role==='parent')$('parentFutureLink').onclick=()=>{tab='future';render();window.scrollTo({top:0,behavior:'smooth'})};
   if(profile.role!=='parent')$('pastMoreOptions').addEventListener('toggle',ev=>{pastOptionsOpen=ev.target.open});
   $('pastPrev').onclick=()=>choosePastMonth(shiftMonth(current,-1));
   $('pastNext').onclick=()=>choosePastMonth(shiftMonth(current,1));
@@ -319,7 +320,7 @@ function renderFuture(future){
   const idx=months.indexOf(futureMonth);
   const selected=future.filter(e=>e.date.startsWith(futureMonth+'-'));
   const [year,month]=futureMonth.split('-');
-  root.innerHTML=`<div class="card past-toolbar">
+  root.innerHTML=`${profile?.role==='parent'?'<div class="parent-history-nav"><button type="button" id="parentFutureLink">← 今後の予定に戻る</button></div>':''}<div class="card past-toolbar">
     <div class="past-heading"><h3>📅 今後の活動</h3><span class="past-count">${selected.length}件の活動</span></div>
     <div class="past-month-nav">
       <button type="button" id="futurePrev" aria-label="前の活動月" ${idx===0?'disabled':''}>‹</button>
@@ -327,6 +328,7 @@ function renderFuture(future){
       <button type="button" id="futureNext" aria-label="次の活動月" ${idx===months.length-1?'disabled':''}>›</button>
     </div>
   </div>${selected.map(card).join('')}`;
+  if(profile?.role==='parent')$('parentPastLink').onclick=()=>{tab='past';render();if(pastLoadedMonth!==currentPastMonth())loadPastMonth();window.scrollTo({top:0,behavior:'smooth'})};
   $('futurePrev').onclick=()=>{if(idx>0){futureMonth=months[idx-1];renderFuture(future)}};
   $('futureNext').onclick=()=>{if(idx<months.length-1){futureMonth=months[idx+1];renderFuture(future)}};
 }
