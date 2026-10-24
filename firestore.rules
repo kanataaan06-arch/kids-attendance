@@ -19,10 +19,9 @@ service cloud.firestore {
     }
     function endOfEvent(e) {
       let d = e.date.split('-');
-      let t = e.get('end', '').split(':');
       let midnight = timestamp.date(int(d[0]), int(d[1]), int(d[2]));
-      return e.get('allDay', false) ? midnight + duration.value(15, 'h')
-        : midnight + duration.value(int(t[0]) - 9, 'h') + duration.value(int(t[1]), 'm');
+      // Japan 23:59:59 = UTC 14:59:59 on the same calendar date.
+      return midnight + duration.value(14, 'h') + duration.value(59, 'm') + duration.value(59, 's');
     }
     function matchesEvent(p, e) {
       return p.keys().hasOnly(['date','dateAt','start','end','place','kind','allDay','instructorIds'])
