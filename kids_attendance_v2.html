@@ -315,25 +315,9 @@ function scheduleData(e,ids=[]){const data=publicScheduleData(e);data.instructor
 const parentScheduleRef=id=>doc(db,'parentSchedules',id);
 const publicInstructorRef=(id,uid)=>doc(db,'parentSchedules',id,'instructors',uid);
 function publicInstructorData(m){return {name:m.name||'名前未設定',photoURL:/^https:\/\/[a-z0-9.-]+\.googleusercontent\.com\//i.test(m.photoURL||'')?m.photoURL:''}}
-// Diagnostic logs only: no document contents, names, or account IDs are printed.
-// A transaction callback may run multiple times when Firestore retries it.
-function transactionDiagnostic(operation){
-  const started=performance.now();
-  let attempt=0,stage='開始';
-  const log=(message,details)=>{
-    stage=message;
-    console.info('[Firestore診断]['+operation+'] '+message,{経過ms:Math.round(performance.now()-started),試行:attempt,...(details||{})});
-  };
-  return {
-    attempt(){attempt++;log('トランザクション試行開始')},
-    log,
-    failed(error){console.error('[Firestore診断]['+operation+'] 失敗',{最終段階:stage,試行回数:attempt,経過ms:Math.round(performance.now()-started),code:error?.code,message:error?.message},error)}
-  };
-}
 async function publishOwnAttendance(eventId,value){
   // Atomic writes avoid the transaction's server-side pre-read. Firestore rules
   // still verify ownership, event existence and the public projection.
-  console.info('[Firestore診断][出欠回答] 一括書き込み開始',{回答:value});
   const batch=writeBatch(db);
   batch.set(doc(db,'events',eventId,'answers',me.uid),{value,updatedAt:serverTimestamp()});
   batch.update(parentScheduleRef(eventId),{instructorIds:value==='○'?arrayUnion(me.uid):arrayRemove(me.uid)});
@@ -341,34 +325,19 @@ async function publishOwnAttendance(eventId,value){
   else batch.delete(publicInstructorRef(eventId,me.uid));
   try{
     await batch.commit();
-    console.info('[Firestore診断][出欠回答] 一括書き込み成功');
   }catch(error){
-    console.error('[Firestore診断][出欠回答] 一括書き込み失敗',{code:error?.code,message:error?.message},error);
     throw error;
   }
 }
 async function updateEventWithSchedule(id,changes){
-  const diag=transactionDiagnostic('予定変更');
-  diag.log('処理開始',{変更項目:Object.keys(changes)});
-  try{
-    await runTransaction(db,async tx=>{
-      diag.attempt();
-      const ref=doc(db,'events',id),pub=parentScheduleRef(id);
-      diag.log('予定の読み取り開始');
-      const event=await tx.get(ref);
-      diag.log('予定の読み取り完了',{存在:event.exists()});
-      diag.log('公開予定の読み取り開始');
-      const schedule=await tx.get(pub);
-      diag.log('公開予定の読み取り完了',{存在:schedule.exists()});
-      if(!event.exists())throw new Error('予定が見つかりません');
-      const next={...event.data(),...changes};
-      diag.log('予定・公開予定の更新を予約');
-      tx.update(ref,changes);
-      tx.set(pub,scheduleData(next,schedule.exists()?schedule.data().instructorIds||[]:[]));
-      diag.log('更新予約完了（Firestoreの確定待ち）');
-    });
-    diag.log('コミット成功');
-  }catch(error){diag.failed(error);throw error}
+  await runTransaction(db,async tx=>{
+    const ref=doc(db,'events',id),pub=parentScheduleRef(id);
+    const event=await tx.get(ref),schedule=await tx.get(pub);
+    if(!event.exists())throw new Error('予定が見つかりません');
+    const next={...event.data(),...changes};
+    tx.update(ref,changes);
+    tx.set(pub,scheduleData(next,schedule.exists()?schedule.data().instructorIds||[]:[]));
+  });
 }
 async function syncPublicSchedule(e){
   if(profile?.role!=='admin')return;
