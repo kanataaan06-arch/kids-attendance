@@ -526,7 +526,7 @@ unsubs.push(onSnapshot(collection(db,'members'),snapshot=>{
   const own=members.find(m=>m.id===me.uid);
   if(own&&own.role!==profile?.role){window.location.reload();return}
   if(own){profile={...own};$('authstate').textContent='ログイン中：'+own.name}
-  if(profile?.role==='admin')for(const e of events)syncPublicSchedule(e).then(()=>Promise.all(members.map(m=>syncPublicInstructor(e,m)))).catch(console.error);
+  if(profile?.role==='admin')console.info('公開予定の同期は管理者の明示的な変更時に行います');
   render();
 },fail));
 
@@ -544,7 +544,7 @@ unsubs.push(onSnapshot(query(collection(db,'events'),where('date','>=',today()))
     },fail);
     answerUnsubs.set(id,stop);
   }
-  if(profile?.role==='admin')for(const e of events)syncPublicSchedule(e).catch(console.error);
+  
   if(!deleteBusy)render();setLoading('startup',false);
 },e=>{setLoading('startup',false);fail(e)}));}
 
