@@ -163,7 +163,7 @@ const $=id=>document.getElementById(id);const loadingTasks=new Set(['startup']);
 const bulkDrafts=new Map();const deleteSelection=new Set();let deletePeriod='future',deleteMonth='all',deleteKind='all',deletePlace='all',deleteConfirm=false,deleteBusy=false;let futureMonth='';let pastYear='',pastMonth='',pastKind='all',pastOptionsOpen=false,pastEvents=[],pastLoading=false,pastLoadedMonth='',pastRequest=0,deleteHistory=[],deleteHistoryLoaded=false,deleteHistoryLoading=false;let myPendingName='',me=null,profile=null,members=[],events=[],tab='future',unsubs=[],answerUnsubs=new Map();
 const clean=()=>{[...unsubs,...answerUnsubs.values()].forEach(fn=>fn());unsubs=[];answerUnsubs.clear();members=[];events=[];profile=null;myPendingName='';deleteSelection.clear();deleteConfirm=false;deleteBusy=false;pastEvents=[];pastLoadedMonth='';pastLoading=false;pastRequest++;deleteHistory=[];deleteHistoryLoaded=false;deleteHistoryLoading=false;};
 function notify(s,bad=false){$('message').textContent=s;$('message').className='notice'+(bad?' error':'');}
-function fail(e){console.error(e);notify('操作できませんでした：'+(e?.message||String(e)),true)}
+function fail(e){console.error('Firestore operation failed:',{code:e?.code,message:e?.message,name:e?.name,stack:e?.stack},e);notify('操作できませんでした'+(e?.code?' ['+e.code+']':'')+'：'+(e?.message||String(e)),true)}
 // Japanese national holidays, including substitute holidays and citizens' holidays (2000–2099).
 const holidayCache=new Map();
 function japaneseHolidays(year){
@@ -513,7 +513,7 @@ function render(){if(!profile||!me)return;const parent=profile.role==='parent';i
   let saved=0;
   for(const el of pending){
     try{await publishOwnAttendance(el.dataset.id,el.value);saved++}
-    catch(error){console.error('出欠の保存に失敗:',el.dataset.id,error);notify(saved+'件保存しましたが、残り'+(pending.length-saved)+'件を保存できませんでした：'+(error?.message||String(error)),true);return}
+    catch(error){console.error('出欠の保存に失敗:',el.dataset.id,error);notify(saved+'件保存しましたが、残り'+(pending.length-saved)+'件を保存できませんでした'+(error?.code?' ['+error.code+']':'')+'：'+(error?.message||String(error)),true);return}
   }
   bulkDrafts.clear();notify(saved+'件の出欠を保存しました');render();window.scrollTo({top:0,behavior:'smooth'})
 }catch(e){fail(e)}finally{btn.disabled=false}};
