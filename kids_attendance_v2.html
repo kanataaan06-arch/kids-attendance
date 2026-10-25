@@ -331,29 +331,21 @@ function transactionDiagnostic(operation){
   };
 }
 async function publishOwnAttendance(eventId,value){
-  const diag=transactionDiagnostic('出欠回答');
-  diag.log('処理開始',{回答:value});
+  // Atomic writes avoid the transaction's server-side pre-read. Firestore rules
+  // still verify ownership, event existence and the public projection.
+  console.info('[Firestore診断][出欠回答] 一括書き込み開始',{回答:value});
+  const batch=writeBatch(db);
+  batch.set(doc(db,'events',eventId,'answers',me.uid),{value,updatedAt:serverTimestamp()});
+  batch.update(parentScheduleRef(eventId),{instructorIds:value==='○'?arrayUnion(me.uid):arrayRemove(me.uid)});
+  if(value==='○')batch.set(publicInstructorRef(eventId,me.uid),publicInstructorData(profile));
+  else batch.delete(publicInstructorRef(eventId,me.uid));
   try{
-    await runTransaction(db,async tx=>{
-      diag.attempt();
-      const eventRef=doc(db,'events',eventId),scheduleRef=parentScheduleRef(eventId);
-      diag.log('予定の読み取り開始');
-      const event=await tx.get(eventRef);
-      diag.log('予定の読み取り完了',{存在:event.exists()});
-      diag.log('公開予定の読み取り開始');
-      const schedule=await tx.get(scheduleRef);
-      diag.log('公開予定の読み取り完了',{存在:schedule.exists()});
-      if(!event.exists())throw new Error('予定が見つかりません');
-      if(!schedule.exists())throw new Error('公開予定の準備中です。管理者に画面の再読み込みを依頼してください');
-      diag.log('回答・公開予定・講師情報の更新を予約');
-      tx.set(doc(db,'events',eventId,'answers',me.uid),{value,updatedAt:serverTimestamp()});
-      tx.update(scheduleRef,{instructorIds:value==='○'?arrayUnion(me.uid):arrayRemove(me.uid)});
-      if(value==='○')tx.set(publicInstructorRef(eventId,me.uid),publicInstructorData(profile));
-      else tx.delete(publicInstructorRef(eventId,me.uid));
-      diag.log('更新予約完了（Firestoreの確定待ち）');
-    });
-    diag.log('コミット成功');
-  }catch(error){diag.failed(error);throw error}
+    await batch.commit();
+    console.info('[Firestore診断][出欠回答] 一括書き込み成功');
+  }catch(error){
+    console.error('[Firestore診断][出欠回答] 一括書き込み失敗',{code:error?.code,message:error?.message},error);
+    throw error;
+  }
 }
 async function updateEventWithSchedule(id,changes){
   const diag=transactionDiagnostic('予定変更');
@@ -396,28 +388,35 @@ async function syncPublicInstructor(e,m){
   }else{if(snap.exists())batch.delete(ref);if(ids.includes(m.id))batch.update(parentScheduleRef(e.id),{instructorIds:arrayRemove(m.id)});}
   await batch.commit();
 }
-function watchParentSchedules(){
-  // A future query bound fails closed if a device clock is behind the server.
+async function watchParentSchedules(){
+  // Parents load a fresh snapshot on page entry/reload; no persistent listeners
+  // or per-second refreshes are needed for their read-only schedule.
   const cutoff=Timestamp.fromMillis(Math.ceil((Date.now()+1000)/60000)*60000);
-  unsubs.push(onSnapshot(query(collection(db,'parentSchedules'),where('dateAt','>=',cutoff)),snapshot=>{
-    for(const stop of answerUnsubs.values())stop();answerUnsubs.clear();
-    events=snapshot.docs.map(d=>({id:d.id,...d.data(),instructors:[]}));
-    for(const event of events)for(const uid of new Set(event.instructorIds||[])){
-      const key=event.id+'/'+uid;
-      answerUnsubs.set(key,onSnapshot(publicInstructorRef(event.id,uid),person=>{
-        const current=events.find(e=>e.id===event.id);if(!current)return;
-        current.instructors=current.instructors.filter(m=>m.id!==uid);
-        if(person.exists())current.instructors.push({id:uid,...person.data()});render();
-      },error=>{
-        const current=events.find(e=>e.id===event.id);if(current){current.instructors=current.instructors.filter(m=>m.id!==uid);render()}
-        if(error.code!=='permission-denied')fail(error);
-      }));
+  try{
+    const snapshot=await getDocs(query(collection(db,'parentSchedules'),where('dateAt','>=',cutoff)));
+    if(profile?.role!=='parent')return;
+    const loaded=snapshot.docs.map(d=>({id:d.id,...d.data(),instructors:[]}));
+    const results=await Promise.all(loaded.flatMap(event=>
+      [...new Set(event.instructorIds||[])].map(async uid=>{
+        try{
+          const person=await getDoc(publicInstructorRef(event.id,uid));
+          return {eventId:event.id,uid,person:person.exists()?person.data():null};
+        }catch(error){
+          // A member can withdraw between the schedule query and detail fetch.
+          if(error.code==='permission-denied'||error.code==='not-found')return {eventId:event.id,uid,person:null};
+          throw error;
+        }
+      })
+    ));
+    if(profile?.role!=='parent')return;
+    for(const item of results){
+      const event=loaded.find(e=>e.id===item.eventId);
+      if(event&&item.person)event.instructors.push({id:item.uid,...item.person});
     }
-    render();setLoading('startup',false);
-  },e=>{setLoading('startup',false);fail(e)}));
-  const timer=setInterval(()=>{if(profile?.role==='parent')watch().catch(fail)},60000);
-  unsubs.push(()=>clearInterval(timer));
-  const expiryTimer=setInterval(()=>{if(profile?.role==='parent')render()},1000);unsubs.push(()=>clearInterval(expiryTimer));
+    events=loaded;
+    render();
+  }catch(error){if(profile?.role==='parent')fail(error)}
+  finally{if(profile?.role==='parent')setLoading('startup',false)}
 }
 async function loadAccessRole(){
   const ref=doc(db,'accessStatus',me.uid);
@@ -571,7 +570,7 @@ $('mynameinput').value=profile.name||'';$('mynamehint').textContent='名前は�
 unsubs.push(onSnapshot(doc(db,'accessStatus',me.uid),snap=>{
   if(!snap.exists()||profile?.role!==snap.data().role){watch().catch(fail)}
 },error=>{if(error.code==='permission-denied')watch().catch(fail);else fail(error)}));
-if(profile.role==='parent'){watchParentSchedules();return}
+if(profile.role==='parent'){watchParentSchedules().catch(fail);return}
 unsubs.push(onSnapshot(collection(db,'members'),snapshot=>{
   members=snapshot.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order??99)-(b.order??99));
   const own=members.find(m=>m.id===me.uid);
