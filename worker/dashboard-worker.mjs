@@ -1251,7 +1251,7 @@ function message2(token) {
   return { message: { token, data: { title: "\u30AD\u30C3\u30BA\u51FA\u6B20\u30FB\u901A\u77E5\u30C6\u30B9\u30C8", body: "\u6D3B\u52D5\u4E88\u5B9A\u304C\u8FFD\u52A0\u30FB\u5909\u66F4\u3055\u308C\u307E\u3057\u305F\u3002\u51FA\u6B20\u7BA1\u7406\u30A2\u30D7\u30EA\u3092\u3054\u78BA\u8A8D\u304F\u3060\u3055\u3044\u3002" }, webpush: { headers: { Urgency: "normal", TTL: "300" }, fcm_options: { link: "https://kanataaan06-arch.github.io/kids-attendance/compact_preview.html?notification-test=1" } } } };
 }
 __name(message2, "message");
-async function handle(request, env, deps = { identity, role, accessToken, fetch }) {
+async function handle(request, env, deps = { identity, role, accessToken, fetch: (...args) => fetch(...args) }) {
   if (!env.TEST_PARENT_UID || !env.DB) fail(503, "Worker\u306E\u4FDD\u8B77\u8005UID\u30FBD1\u8A2D\u5B9A\u304C\u5FC5\u8981\u3067\u3059\u3002");
   const token = request.headers.get("Authorization")?.match(/^Bearer (\S+)$/)?.[1];
   if (!token) fail(401, "\u30ED\u30B0\u30A4\u30F3\u304C\u5FC5\u8981\u3067\u3059\u3002");
