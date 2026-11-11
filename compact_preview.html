@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#2463db">
+<title>出欠管理｜コンパクト表示お試し版</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7fb;color:#263044;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;line-height:1.45}
+header{background:white;border-bottom:1px solid #e0e5ed;padding:13px 16px}
+.brand{max-width:780px;margin:auto;display:flex;align-items:center;gap:11px}
+.logo{width:40px;height:40px;display:grid;place-items:center;border-radius:11px;background:#eaf3ff;font-size:23px}
+.brand h1{font-size:18px;margin:0;font-weight:800}
+.brand small{color:#68778e;font-size:11px}
+main{max-width:780px;margin:auto;padding:14px 14px 40px}
+.notice{background:#fff9e9;border:1px solid #f0dca6;border-radius:12px;padding:11px 13px;font-size:12px;color:#715419;margin:2px 0 14px}
+.notice strong{display:block;font-size:13px;margin-bottom:3px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#edf2fa;border:1px solid #dfe7f2;border-radius:14px;padding:6px;margin-bottom:17px}
+.tab{padding:10px 4px;text-align:center;border-radius:10px;color:#62718a;font-size:12px;font-weight:700}
+.tab.active{background:#2463db;color:#fff}
+h2{font-size:17px;margin:0 0 4px}
+.sub{font-size:12px;color:#697386;margin:0 0 14px}
+.activity{background:white;border:1px solid #dfe5ee;border-radius:14px;box-shadow:0 2px 6px #14243f09;margin:10px 0;overflow:hidden;position:relative}
+.activity:before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:5px;background:var(--accent);border-radius:0 5px 5px 0}
+.activity summary{list-style:none;cursor:pointer;padding:12px 13px 12px 17px}
+.activity summary::-webkit-details-marker{display:none}
+.activity summary:focus-visible{outline:3px solid #82b5ff;outline-offset:-3px}
+.top{display:grid;grid-template-columns:55px minmax(0,1fr) 18px;gap:9px;align-items:start}
+.date{text-align:center;padding-top:2px}
+.date strong{display:block;font-size:20px;line-height:1.15;color:#1d2c44}
+.date span{font-size:11px;font-weight:700;color:#65738a}
+.date.sunday strong,.date.sunday span{color:#d03948}
+.kind{font-size:15px;font-weight:800;color:#1d2c44}
+.meta{font-size:12px;color:#62718a;display:flex;gap:7px;flex-wrap:wrap;margin-top:4px}
+.meta span{white-space:nowrap}
+.chevron{color:#718096;font-size:18px;line-height:1.3;transition:transform .18s}
+.activity[open] .chevron{transform:rotate(180deg)}
+.attend{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:9px}
+.avatar{width:29px;height:29px;border-radius:50%;background:#e7eef9;color:#335987;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;border:2px solid #fff;box-shadow:0 0 0 1px #dce5f1;flex-shrink:0}
+.avatar:nth-child(4n+2){background:#fce8f0;color:#9c3d69}
+.avatar:nth-child(4n+3){background:#e6f6ec;color:#397b56}
+.avatar:nth-child(4n+4){background:#fff0d9;color:#96631c}
+.count{font-size:11px;font-weight:800;color:#168453;margin-left:4px;white-space:nowrap}
+.empty{font-size:12px;color:#7d8898}
+.hint{display:block;color:#8290a3;font-size:10px;margin-top:5px}
+.details{border-top:1px solid #e6ebf3;padding:12px 14px 14px 17px;background:#fbfdff}
+.details h3{font-size:13px;margin:0 0 10px;color:#33445d}
+.group{margin:10px 0}
+.grouphead{font-size:12px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.dot{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;font-size:12px}
+.yes{background:#e3f5e9;color:#137f49}.maybe{background:#fff1d8;color:#9a650c}.no{background:#fee8e8;color:#b53b3b}.none{background:#edf0f5;color:#68778e}
+.names{display:flex;flex-wrap:wrap;gap:6px}
+.person{background:white;border:1px solid #e1e7f0;border-radius:20px;padding:5px 9px;font-size:12px;font-weight:650}
+.details-foot{font-size:11px;color:#728096;margin:13px 0 0;border-top:1px dashed #d9e1ec;padding-top:10px}
+.note{font-size:12px;color:#64748b;margin:17px 2px 0}
+@media(min-width:620px){.activity summary{padding:15px 17px 15px 23px}.top{grid-template-columns:65px minmax(0,1fr) 20px}.date strong{font-size:23px}.kind{font-size:16px}.avatar{width:31px;height:31px}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="logo">🎭</div><div><h1>キッズ講師 出欠管理</h1><small>コンパクト表示・お試し版</small></div></div></header>
+<main>
+<div class="notice"><strong>🧪 見た目を比べるためのサンプルです</strong>表示している予定・名前・出欠はすべて架空のデータです。ログイン不要で、実際のアプリや出欠データには一切影響しません。</div>
+<div class="tabs" aria-label="画面の見本"><div class="tab active">📅 予定一覧</div><div class="tab">✍️ 一括回答</div><div class="tab">⚙️ その他</div></div>
+<h2>今後の活動</h2>
+<p class="sub">○の参加者だけを表示。予定をタップすると、全員の名前と回答が見られます。</p>
+<details class="activity" style="--accent:#1478e9">
+<summary><div class="top"><div class="date sunday"><strong>1/10</strong><span>（日）</span></div><div><div class="kind">🎭 通常活動</div><div class="meta"><span>🕒 13:00〜17:00</span><span>📍 ドラマ</span></div><div class="attend" aria-label="参加者6人"><span class="avatar" title="講師A">A</span><span class="avatar" title="講師B">B</span><span class="avatar" title="講師C">C</span><span class="avatar" title="講師D">D</span><span class="avatar" title="講師E">E</span><span class="avatar" title="講師F">F</span><span class="count">○ 6人</span></div><span class="hint">タップして名前・全員の出欠を確認</span></div><span class="chevron" aria-hidden="true">⌄</span></div></summary>
+<div class="details"><h3>出欠の詳細</h3><div class="group"><div class="grouphead"><span class="dot yes">○</span>参加 6人</div><div class="names"><span class="person">講師A</span><span class="person">講師B</span><span class="person">講師C</span><span class="person">講師D</span><span class="person">講師E</span><span class="person">講師F</span></div></div><div class="group"><div class="grouphead"><span class="dot maybe">△</span>未定 1人</div><div class="names"><span class="person">講師G</span></div></div><div class="group"><div class="grouphead"><span class="dot no">×</span>欠席 1人</div><div class="names"><span class="person">講師H</span></div></div><div class="group"><div class="grouphead"><span class="dot none">−</span>未回答 1人</div><div class="names"><span class="person">講師I</span></div></div><p class="details-foot">※ お試し版では回答変更・予定編集はできません。</p></div>
+</details>
+<details class="activity" style="--accent:#149866">
+<summary><div class="top"><div class="date sunday"><strong>1/17</strong><span>（日）</span></div><div><div class="kind">🎭 通常活動</div><div class="meta"><span>🕒 12:00〜18:00</span><span>📍 里山</span></div><div class="attend" aria-label="参加者3人"><span class="avatar" title="講師A">A</span><span class="avatar" title="講師C">C</span><span class="avatar" title="講師E">E</span><span class="count">○ 3人</span></div><span class="hint">タップして名前・全員の出欠を確認</span></div><span class="chevron" aria-hidden="true">⌄</span></div></summary>
+<div class="details"><h3>出欠の詳細</h3><div class="group"><div class="grouphead"><span class="dot yes">○</span>参加 3人</div><div class="names"><span class="person">講師A</span><span class="person">講師C</span><span class="person">講師E</span></div></div><div class="group"><div class="grouphead"><span class="dot maybe">△</span>未定 2人</div><div class="names"><span class="person">講師B</span><span class="person">講師F</span></div></div><div class="group"><div class="grouphead"><span class="dot no">×</span>欠席 2人</div><div class="names"><span class="person">講師D</span><span class="person">講師G</span></div></div><div class="group"><div class="grouphead"><span class="dot none">−</span>未回答 2人</div><div class="names"><span class="person">講師H</span><span class="person">講師I</span></div></div><p class="details-foot">※ お試し版では回答変更・予定編集はできません。</p></div>
+</details>
+<details class="activity" style="--accent:#e98716">
+<summary><div class="top"><div class="date sunday"><strong>1/24</strong><span>（日）</span></div><div><div class="kind">🥷 忍者</div><div class="meta"><span>🕒 10:00〜15:00</span><span>📍 パフォ</span></div><div class="attend"><span class="empty">○ 参加回答はまだありません</span></div><span class="hint">タップして名前・全員の出欠を確認</span></div><span class="chevron" aria-hidden="true">⌄</span></div></summary>
+<div class="details"><h3>出欠の詳細</h3><div class="group"><div class="grouphead"><span class="dot none">−</span>未回答 9人</div><div class="names"><span class="person">講師A</span><span class="person">講師B</span><span class="person">講師C</span><span class="person">講師D</span><span class="person">講師E</span><span class="person">講師F</span><span class="person">講師G</span><span class="person">講師H</span><span class="person">講師I</span></div></div><p class="details-foot">※ お試し版では回答変更・予定編集はできません。</p></div>
+</details>
+<p class="note">💡 現在のアプリとは別ページです。この試作品が気に入らなくても、元の画面に戻す作業は必要ありません。</p>
+</main>
+</body>
+</html>
