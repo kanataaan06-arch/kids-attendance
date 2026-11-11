@@ -1,0 +1,24 @@
+{
+  "id": "/kids-attendance/compact_preview.html?notification-test",
+  "name": "キッズ出欠・通知テスト",
+  "short_name": "通知テスト",
+  "start_url": "./compact_preview.html?notification-test=1",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1966d3",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
