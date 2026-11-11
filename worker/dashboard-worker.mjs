@@ -1287,6 +1287,7 @@ async function handle(request, env, deps = { identity, role, accessToken, fetch 
   const locked = await env.DB.prepare("UPDATE send_state SET last_attempt=? WHERE uid=? AND last_attempt < ?").bind(now, env.TEST_PARENT_UID, now - 6e4).run();
   if (!locked.meta.changes) fail(429, "\u9023\u7D9A\u9001\u4FE1\u3092\u9632\u3050\u305F\u3081\u30011\u5206\u5F85\u3063\u3066\u304B\u3089\u64CD\u4F5C\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
   let sent = 0, failed = 0;
+  const diagnostics = [];
   for (const recipient of recipients) {
     try {
       const r = await deps.fetch(`https://fcm.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/messages:send`, { method: "POST", headers: { Authorization: `Bearer ${oauth}`, "Content-Type": "application/json" }, body: JSON.stringify(message2(recipient.token)) });
@@ -1297,12 +1298,15 @@ async function handle(request, env, deps = { identity, role, accessToken, fetch 
       }
       failed++;
       const error = await r.json().catch(() => ({}));
+      const code = error.error?.details?.map((d) => d.errorCode).find(Boolean) || error.error?.status || "UNKNOWN";
+      diagnostics.push(String(r.status) + "/" + String(code).slice(0, 60));
       if (error.error?.details?.some((d) => d.errorCode === "UNREGISTERED")) await env.DB.prepare("DELETE FROM recipients WHERE uid=? AND token=?").bind(env.TEST_PARENT_UID, recipient.token).run();
     } catch {
       failed++;
+      diagnostics.push("NETWORK_ERROR");
     }
   }
-  return { sent, failed, registered: recipients.length, message: sent ? "" : "FCM\u9001\u4FE1\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002\u5404\u7AEF\u672B\u306E\u767B\u9332\u3068Worker\u306E\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002" };
+  return { sent, failed, registered: recipients.length, message: sent ? "" : "FCM送信に失敗しました。診断コード：" + [...new Set(diagnostics)].join(", ") };
 }
 __name(handle, "handle");
 var index_default = { async fetch(request, env) {
