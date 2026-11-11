@@ -219,6 +219,8 @@ import {getMessaging,getToken,onMessage,isSupported as isMessagingSupported} fro
 import {PUSH_TEST_VAPID_KEY,PUSH_TEST_WORKER_URL} from './push-test-config.js';
 const firebaseConfig={apiKey:'AIzaSyCbE1BqIxMGke2vT4FcyZKWLqQX6YmzEsU',authDomain:'kids-attendance-b89d4.firebaseapp.com',projectId:'kids-attendance-b89d4',storageBucket:'kids-attendance-b89d4.firebasestorage.app',messagingSenderId:'408668881637',appId:'1:408668881637:web:63464582c7bd720949ca0c'};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();
+// Test preview only: always offer Google account selection (e.g. parent's account on shared Android).
+provider.setCustomParameters({prompt:'select_account'});
 async function pushTestRequest(path,data){
   if(!PUSH_TEST_WORKER_URL||!/^https:\/\/[^/]+\.workers\.dev$/.test(PUSH_TEST_WORKER_URL))throw new Error('Cloudflare WorkerのURLを設定してください。');
   const user=auth.currentUser;if(!user)throw new Error('ログインしてください。');
