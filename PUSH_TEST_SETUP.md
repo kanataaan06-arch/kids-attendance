@@ -2,12 +2,12 @@
 
 ## 構成と制約
 
-`compact_preview.html` → FirebaseログインのIDトークン → Cloudflare Worker `morning-grass-0a11` → FCM HTTP v1 → 夫のiPhone。
+`compact_preview.html` → FirebaseログインのIDトークン → Cloudflare Worker `morning-grass-0a11` → FCM HTTP v1 → 夫のiPhone・Android。
 Firebase Cloud Functionsは使わない。Firebase Sparkを維持する。旧`functions/`は互換資料として残すがデプロイしない。以前のBlaze必須の手順は廃止。
 Firestoreルール・本番`kids_attendance_v2.html`・別の比較版HTMLは変更しない。
 
-通知先を選ぶUIはない。Workerの`TEST_PARENT_UID`と現在の`members/{UID}.role == parent`が一致したアカウントだけ登録できる。最後に登録した1台だけ保持する。他の保護者や講師は登録できない。UIDと保護者権限を送信時にも確認する。
-予定の追加・編集・出欠回答から自動送信しない。20件まとめて変更しても、最後に「メンバーの管理」のボタンを1回押すことで1件だけ送る。
+通知先を選ぶUIはない。Workerの`TEST_PARENT_UID`と現在の`members/{UID}.role == parent`が一致したアカウントだけ登録できる。同じアカウントの登録済みFCMトークンをすべて保持し、同じトークンの再登録は重複させない。他の保護者や講師は登録できない。UIDと保護者権限を送信時にも確認する。
+予定の追加・編集・出欠回答から自動送信しない。20件まとめて変更しても、最後に「メンバーの管理」のボタンを1回押すことで各端末へ1件ずつ送る。
 
 ## 1. Firebase（無料プランのまま）
 
@@ -55,11 +55,23 @@ CloudflareのWorkersプランはFreeを選択する。D1も無料枠を使う。
 
 GitHub Pagesへこの変更を反映する。PRブランチのままでは通常Pagesは更新されない。Pagesの公開元ブランチへマージし、Actionsの公開完了を待つ。Firebaseへのdeployは不要。特に`firebase deploy`や`--only functions`は実行しない。
 
-## 3. 夫のiPhoneで確認
+## 既に1台用Workerをデプロイ済みの場合
+
+新しいWorkerをデプロイする前に、同じD1で次を実行する。既存の1台の登録と送信制限時刻は保持される。このSQLは再実行可能。新規作成時も同じ手順を使う。
+
+```sh
+cd worker
+npx wrangler d1 execute kids-attendance-push-test --remote --file=schema.sql
+npm run deploy
+```
+
+その後、テスト版HTMLもGitHub Pagesへ公開する。設定済みのSecrets、D1 ID、Worker URL、公開VAPIDキーは維持する。
+
+## 3. iPhoneとAndroidの両方で確認
 
 1. iOS 16.4以降のSafariで`https://kanataaan06-arch.github.io/kids-attendance/compact_preview.html?notification-test=1`を開く。
 2. 共有 > ホーム画面に追加で「通知テスト」アイコンを作り、そのアイコンから起動する。本番アイコンとは別にする。
-3. 夫の保護者アカウントでGoogleログインする。「このiPhoneで通知を受け取る」を押して許可する。指定外アカウントはWorker側で拒否される。
+3. 夫の保護者アカウントでGoogleログインする。「この端末で通知を受け取る」を押して許可する。指定外アカウントはWorker側で拒否される。
 4. 管理者はテスト版にログインし、「メンバーの管理」>「保護者にテスト通知を送る」>確認で送信する。
 5. iPhoneのホーム画面に戻った状態と、アプリを開いた状態の両方で確認する。通知タップでテスト版へ戻る。講師に通知許可を依頼しない。
 
@@ -67,11 +79,11 @@ GitHub Pagesへこの変更を反映する。PRブランチのままでは通常
 
 ## 重複・再送の扱い
 
-- FCMはdata-onlyで1回送信し、Service Worker（画面表示中はonMessage）が1件表示する。notificationペイロードとの二重表示を避ける。
+- FCMは各登録トークンへdata-onlyで1回送信し、Service Worker（画面表示中はonMessage）が1件表示する。notificationペイロードとの二重表示を避ける。
 - D1の原子的更新で同時送信・別タブを含め1分間に1回までに制限する。同じ送信IDは24時間記録し再送しない。
-- ネットワークエラーで結果が不明な場合、同じページからの再試行は同じIDを使い重複を防ぐ。受付済みでも不達になる場合はある。iPhoneを確認してから再読み込みし、1分以上待って明示的に新しい送信を行う。
+- ネットワークエラーで結果が不明な場合、同じページからの再試行は同じIDを使い重複を防ぐ。受付済みでも不達になる場合はある。各端末を確認してから再読み込みし、1分以上待って明示的に新しい送信を行う。
 - 固定tagで通知センター内の同じテスト通知を置き換えるよう要求する。OSによる表示・音・配信順序までは保証できない。サイレント通知を要求する。
-- 最後に登録した端末だけが対象。同じアカウントで別端末登録すると送信先が切り替わる。
+- 同じ夫のアカウントで登録した全端末が対象。追加登録しても既存端末は上書きしない。FCMがUNREGISTEREDを返したトークンは削除する。ブラウザやトークンが変わったときはその端末で再登録する。
 
 ## 将来の本番仕様
 
@@ -80,3 +92,13 @@ GitHub Pagesへこの変更を反映する。PRブランチのままでは通常
 ## 終了・無効化
 
 CloudflareでWorkerを無効化しD1データベースを削除する。不要になったサービスアカウント鍵をGoogle Cloud Consoleで削除する。過去に旧Cloud Functionsをデプロイ済みなら、Firebase Consoleで`registerParentPushTestToken`と`sendParentPushTestNotification`が残っていないか確認し削除する（今回の作業では既存デプロイの有無は未確認）。
+
+### Android（Xiaomi Redmi）の追加登録と2台同時テスト
+
+1. RedmiのChromeで同じ`compact_preview.html?notification-test=1`を開き、夫の同じGoogleアカウントでログインする。Androidはホーム画面追加なしでも登録可能（追加して使ってもよい）。
+2. 「この端末で通知を受け取る」を押し、Chromeの通知許可を承認する。iPhone側も通知登録を済ませておく。
+3. Redmiの設定でChromeの通知と対象サイトの通知を許可する。届かない場合はHyperOS/MIUIのバッテリー制限、集中モード、バックグラウンド通信の設定も確認する。シークレットモードは使わない。
+4. 管理者が「メンバーの管理」の送信ボタンを1回だけ押す。登録済み端末がこの2台なら、FCM受付成功数は「2台」と表示される。iPhoneとRedmiそれぞれに通知が1件表示されることを確認する。
+5. 端末をロックした状態と画面を開いた状態を、1分以上間隔を空けてそれぞれ確認する。片方への送信が失敗しても、もう片方への送信は続行し、成功数・失敗数を表示する。失敗した端末を自動再送しない。
+
+「全端末」はこの指定アカウントで登録されたすべてのFCMトークンを指す。テスト端末の実際の表示は実機で確認が必要。FCMリクエストは登録端末ごとに1回になるため、無料枠の使用量は端末数に応じて増える。FirebaseとCloudflareのプラン変更は不要。

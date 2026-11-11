@@ -39,30 +39,36 @@ export async function handle(request,env,deps={identity,role,accessToken,fetch})
   if(path==='/register'){
     if(uid!==env.TEST_PARENT_UID||currentRole!=='parent')fail(403,'指定された保護者アカウントだけが登録できます。');
     if(typeof body.token!=='string'||body.token.length<20||body.token.length>4096)fail(400,'通知トークンが不正です。');
-    // Only the most recently registered phone is retained; preserve cooldown.
-    await env.DB.prepare('INSERT INTO recipient(id,uid,token) VALUES(1,?,?) ON CONFLICT(id) DO UPDATE SET uid=excluded.uid,token=excluded.token').bind(uid,body.token).run();
+    // Keep each distinct device token; re-registering the same token is idempotent.
+    await env.DB.prepare('INSERT INTO recipients(token,uid) VALUES(?,?) ON CONFLICT(token) DO UPDATE SET uid=excluded.uid').bind(body.token,uid).run();
     return {registered:true};
   }
   if(path!=='/send')fail(404,'見つかりません。');
   if(currentRole!=='admin')fail(403,'管理者だけが送信できます。');
   if(Object.keys(body).some(k=>k!=='requestId')||!/^[-a-zA-Z0-9]{16,80}$/.test(body.requestId||''))fail(400,'送信IDが不正です。');
-  const recipient=await env.DB.prepare('SELECT * FROM recipient WHERE id=1').first();
-  if(!recipient||recipient.uid!==env.TEST_PARENT_UID)fail(409,'夫のiPhoneで通知を登録してください。');
-  if(await deps.role(recipient.uid,token,env)!=='parent')fail(403,'通知先が保護者ではないため送信を中止しました。');
+  const {results:recipients}=await env.DB.prepare('SELECT token FROM recipients WHERE uid=?').bind(env.TEST_PARENT_UID).all();
+  if(!recipients.length)fail(409,'夫のiPhone・Androidで通知を登録してください。');
+  if(await deps.role(env.TEST_PARENT_UID,token,env)!=='parent')fail(403,'通知先が保護者ではないため送信を中止しました。');
   // Obtain credentials before reserving a send attempt. Never retry an ambiguous FCM result.
   const oauth=await deps.accessToken(env),now=Date.now();
   await env.DB.prepare('DELETE FROM deliveries WHERE created_at < ?').bind(now-86400000).run();
   const inserted=await env.DB.prepare('INSERT OR IGNORE INTO deliveries(id,created_at) VALUES(?,?)').bind(body.requestId,now).run();
   if(!inserted.meta.changes)return {sent:0,message:'この操作は受付済みです。再送しません。'};
-  const locked=await env.DB.prepare('UPDATE recipient SET last_attempt=? WHERE id=1 AND uid=? AND token=? AND last_attempt < ?').bind(now,recipient.uid,recipient.token,now-60000).run();
+  await env.DB.prepare('INSERT OR IGNORE INTO send_state(uid,last_attempt) VALUES(?,0)').bind(env.TEST_PARENT_UID).run();
+  const locked=await env.DB.prepare('UPDATE send_state SET last_attempt=? WHERE uid=? AND last_attempt < ?').bind(now,env.TEST_PARENT_UID,now-60000).run();
   if(!locked.meta.changes)fail(429,'連続送信を防ぐため、1分待ってから操作してください。');
-  const r=await deps.fetch(`https://fcm.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/messages:send`,{method:'POST',headers:{Authorization:`Bearer ${oauth}`,'Content-Type':'application/json'},body:JSON.stringify(message(recipient.token))});
-  if(!r.ok){
-    const error=await r.json().catch(()=>({}));
-    if(error.error?.details?.some(d=>d.errorCode==='UNREGISTERED'))await env.DB.prepare('DELETE FROM recipient WHERE id=1 AND token=?').bind(recipient.token).run();
-    fail(502,'FCM送信に失敗しました。iPhoneの登録とWorkerの設定を確認してください。');
+  let sent=0,failed=0;
+  // Sequential fan-out stays within Worker connection limits and isolates device failures.
+  for(const recipient of recipients){
+    try{
+      const r=await deps.fetch(`https://fcm.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/messages:send`,{method:'POST',headers:{Authorization:`Bearer ${oauth}`,'Content-Type':'application/json'},body:JSON.stringify(message(recipient.token))});
+      if(r.ok){await r.text();sent++;continue}
+      failed++;
+      const error=await r.json().catch(()=>({}));
+      if(error.error?.details?.some(d=>d.errorCode==='UNREGISTERED'))await env.DB.prepare('DELETE FROM recipients WHERE uid=? AND token=?').bind(env.TEST_PARENT_UID,recipient.token).run();
+    }catch{failed++} // Ambiguous delivery is never automatically retried.
   }
-  return {sent:1};
+  return {sent,failed,registered:recipients.length,message:sent?'':'FCM送信に失敗しました。各端末の登録とWorkerの設定を確認してください。'};
 }
 export default {async fetch(request,env){
   const headers={'Content-Type':'application/json','Cache-Control':'no-store','Vary':'Origin'};
@@ -71,5 +77,5 @@ export default {async fetch(request,env){
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers});
   if(request.method!=='POST')return new Response(JSON.stringify({message:'POSTが必要です。'}),{status:405,headers});
   try{return new Response(JSON.stringify(await handle(request,env)),{headers})}
-  catch(e){return new Response(JSON.stringify({message:e.status?e.message:'処理結果を確認できません。iPhoneの受信状況を確認してください。'}),{status:e.status||502,headers})}
+  catch(e){return new Response(JSON.stringify({message:e.status?e.message:'処理結果を確認できません。各端末の受信状況を確認してください。'}),{status:e.status||502,headers})}
 }};
