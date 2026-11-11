@@ -57,7 +57,7 @@ export async function handle(request,env,deps={identity,role,accessToken,fetch})
   await env.DB.prepare('INSERT OR IGNORE INTO send_state(uid,last_attempt) VALUES(?,0)').bind(env.TEST_PARENT_UID).run();
   const locked=await env.DB.prepare('UPDATE send_state SET last_attempt=? WHERE uid=? AND last_attempt < ?').bind(now,env.TEST_PARENT_UID,now-60000).run();
   if(!locked.meta.changes)fail(429,'連続送信を防ぐため、1分待ってから操作してください。');
-  let sent=0,failed=0;
+  let sent=0,failed=0;const diagnostics=[];
   // Sequential fan-out stays within Worker connection limits and isolates device failures.
   for(const recipient of recipients){
     try{
@@ -65,10 +65,12 @@ export async function handle(request,env,deps={identity,role,accessToken,fetch})
       if(r.ok){await r.text();sent++;continue}
       failed++;
       const error=await r.json().catch(()=>({}));
+      const code=error.error?.details?.map(d=>d.errorCode).find(Boolean)||error.error?.status||'UNKNOWN';
+      diagnostics.push(String(r.status)+'/'+String(code).slice(0,60));
       if(error.error?.details?.some(d=>d.errorCode==='UNREGISTERED'))await env.DB.prepare('DELETE FROM recipients WHERE uid=? AND token=?').bind(env.TEST_PARENT_UID,recipient.token).run();
-    }catch{failed++} // Ambiguous delivery is never automatically retried.
+    }catch{failed++;diagnostics.push('NETWORK_ERROR')} // Ambiguous delivery is never automatically retried.
   }
-  return {sent,failed,registered:recipients.length,message:sent?'':'FCM送信に失敗しました。各端末の登録とWorkerの設定を確認してください。'};
+  return {sent,failed,registered:recipients.length,message:sent?'':'FCM送信に失敗しました。診断コード：'+[...new Set(diagnostics)].join(', ')};
 }
 export default {async fetch(request,env){
   const headers={'Content-Type':'application/json','Cache-Control':'no-store','Vary':'Origin'};
