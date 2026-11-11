@@ -1,82 +1,721 @@
-<!doctype html>
-<html lang="ja">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#2463db">
-<title>出欠管理｜コンパクト表示お試し版</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#f5f7fb;color:#263044;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;line-height:1.45}
-header{background:white;border-bottom:1px solid #e0e5ed;padding:13px 16px}
-.brand{max-width:780px;margin:auto;display:flex;align-items:center;gap:11px}
-.logo{width:40px;height:40px;display:grid;place-items:center;border-radius:11px;background:#eaf3ff;font-size:23px}
-.brand h1{font-size:18px;margin:0;font-weight:800}
-.brand small{color:#68778e;font-size:11px}
-main{max-width:780px;margin:auto;padding:14px 14px 40px}
-.notice{background:#fff9e9;border:1px solid #f0dca6;border-radius:12px;padding:11px 13px;font-size:12px;color:#715419;margin:2px 0 14px}
-.notice strong{display:block;font-size:13px;margin-bottom:3px}
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#edf2fa;border:1px solid #dfe7f2;border-radius:14px;padding:6px;margin-bottom:17px}
-.tab{padding:10px 4px;text-align:center;border-radius:10px;color:#62718a;font-size:12px;font-weight:700}
-.tab.active{background:#2463db;color:#fff}
-h2{font-size:17px;margin:0 0 4px}
-.sub{font-size:12px;color:#697386;margin:0 0 14px}
-.activity{background:white;border:1px solid #dfe5ee;border-radius:14px;box-shadow:0 2px 6px #14243f09;margin:10px 0;overflow:hidden;position:relative}
-.activity:before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:5px;background:var(--accent);border-radius:0 5px 5px 0}
-.activity summary{list-style:none;cursor:pointer;padding:12px 13px 12px 17px}
-.activity summary::-webkit-details-marker{display:none}
-.activity summary:focus-visible{outline:3px solid #82b5ff;outline-offset:-3px}
-.top{display:grid;grid-template-columns:55px minmax(0,1fr) 18px;gap:9px;align-items:start}
-.date{text-align:center;padding-top:2px}
-.date strong{display:block;font-size:20px;line-height:1.15;color:#1d2c44}
-.date span{font-size:11px;font-weight:700;color:#65738a}
-.date.sunday strong,.date.sunday span{color:#d03948}
-.kind{font-size:15px;font-weight:800;color:#1d2c44}
-.meta{font-size:12px;color:#62718a;display:flex;gap:7px;flex-wrap:wrap;margin-top:4px}
-.meta span{white-space:nowrap}
-.chevron{color:#718096;font-size:18px;line-height:1.3;transition:transform .18s}
-.activity[open] .chevron{transform:rotate(180deg)}
-.attend{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:9px}
-.avatar{width:29px;height:29px;border-radius:50%;background:#e7eef9;color:#335987;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;border:2px solid #fff;box-shadow:0 0 0 1px #dce5f1;flex-shrink:0}
-.avatar:nth-child(4n+2){background:#fce8f0;color:#9c3d69}
-.avatar:nth-child(4n+3){background:#e6f6ec;color:#397b56}
-.avatar:nth-child(4n+4){background:#fff0d9;color:#96631c}
-.count{font-size:11px;font-weight:800;color:#168453;margin-left:4px;white-space:nowrap}
-.empty{font-size:12px;color:#7d8898}
-.hint{display:block;color:#8290a3;font-size:10px;margin-top:5px}
-.details{border-top:1px solid #e6ebf3;padding:12px 14px 14px 17px;background:#fbfdff}
-.details h3{font-size:13px;margin:0 0 10px;color:#33445d}
-.group{margin:10px 0}
-.grouphead{font-size:12px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:6px}
-.dot{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;font-size:12px}
-.yes{background:#e3f5e9;color:#137f49}.maybe{background:#fff1d8;color:#9a650c}.no{background:#fee8e8;color:#b53b3b}.none{background:#edf0f5;color:#68778e}
-.names{display:flex;flex-wrap:wrap;gap:6px}
-.person{background:white;border:1px solid #e1e7f0;border-radius:20px;padding:5px 9px;font-size:12px;font-weight:650}
-.details-foot{font-size:11px;color:#728096;margin:13px 0 0;border-top:1px dashed #d9e1ec;padding-top:10px}
-.note{font-size:12px;color:#64748b;margin:17px 2px 0}
-@media(min-width:620px){.activity summary{padding:15px 17px 15px 23px}.top{grid-template-columns:65px minmax(0,1fr) 20px}.date strong{font-size:23px}.kind{font-size:16px}.avatar{width:31px;height:31px}}
-</style>
-</head>
-<body>
-<header><div class="brand"><div class="logo">🎭</div><div><h1>キッズ講師 出欠管理</h1><small>コンパクト表示・お試し版</small></div></div></header>
-<main>
-<div class="notice"><strong>🧪 見た目を比べるためのサンプルです</strong>表示している予定・名前・出欠はすべて架空のデータです。ログイン不要で、実際のアプリや出欠データには一切影響しません。</div>
-<div class="tabs" aria-label="画面の見本"><div class="tab active">📅 予定一覧</div><div class="tab">✍️ 一括回答</div><div class="tab">⚙️ その他</div></div>
-<h2>今後の活動</h2>
-<p class="sub">○の参加者だけを表示。予定をタップすると、全員の名前と回答が見られます。</p>
-<details class="activity" style="--accent:#1478e9">
-<summary><div class="top"><div class="date sunday"><strong>1/10</strong><span>（日）</span></div><div><div class="kind">🎭 通常活動</div><div class="meta"><span>🕒 13:00〜17:00</span><span>📍 ドラマ</span></div><div class="attend" aria-label="参加者6人"><span class="avatar" title="講師A">A</span><span class="avatar" title="講師B">B</span><span class="avatar" title="講師C">C</span><span class="avatar" title="講師D">D</span><span class="avatar" title="講師E">E</span><span class="avatar" title="講師F">F</span><span class="count">○ 6人</span></div><span class="hint">タップして名前・全員の出欠を確認</span></div><span class="chevron" aria-hidden="true">⌄</span></div></summary>
-<div class="details"><h3>出欠の詳細</h3><div class="group"><div class="grouphead"><span class="dot yes">○</span>参加 6人</div><div class="names"><span class="person">講師A</span><span class="person">講師B</span><span class="person">講師C</span><span class="person">講師D</span><span class="person">講師E</span><span class="person">講師F</span></div></div><div class="group"><div class="grouphead"><span class="dot maybe">△</span>未定 1人</div><div class="names"><span class="person">講師G</span></div></div><div class="group"><div class="grouphead"><span class="dot no">×</span>欠席 1人</div><div class="names"><span class="person">講師H</span></div></div><div class="group"><div class="grouphead"><span class="dot none">−</span>未回答 1人</div><div class="names"><span class="person">講師I</span></div></div><p class="details-foot">※ お試し版では回答変更・予定編集はできません。</p></div>
-</details>
-<details class="activity" style="--accent:#149866">
-<summary><div class="top"><div class="date sunday"><strong>1/17</strong><span>（日）</span></div><div><div class="kind">🎭 通常活動</div><div class="meta"><span>🕒 12:00〜18:00</span><span>📍 里山</span></div><div class="attend" aria-label="参加者3人"><span class="avatar" title="講師A">A</span><span class="avatar" title="講師C">C</span><span class="avatar" title="講師E">E</span><span class="count">○ 3人</span></div><span class="hint">タップして名前・全員の出欠を確認</span></div><span class="chevron" aria-hidden="true">⌄</span></div></summary>
-<div class="details"><h3>出欠の詳細</h3><div class="group"><div class="grouphead"><span class="dot yes">○</span>参加 3人</div><div class="names"><span class="person">講師A</span><span class="person">講師C</span><span class="person">講師E</span></div></div><div class="group"><div class="grouphead"><span class="dot maybe">△</span>未定 2人</div><div class="names"><span class="person">講師B</span><span class="person">講師F</span></div></div><div class="group"><div class="grouphead"><span class="dot no">×</span>欠席 2人</div><div class="names"><span class="person">講師D</span><span class="person">講師G</span></div></div><div class="group"><div class="grouphead"><span class="dot none">−</span>未回答 2人</div><div class="names"><span class="person">講師H</span><span class="person">講師I</span></div></div><p class="details-foot">※ お試し版では回答変更・予定編集はできません。</p></div>
-</details>
-<details class="activity" style="--accent:#e98716">
-<summary><div class="top"><div class="date sunday"><strong>1/24</strong><span>（日）</span></div><div><div class="kind">🥷 忍者</div><div class="meta"><span>🕒 10:00〜15:00</span><span>📍 パフォ</span></div><div class="attend"><span class="empty">○ 参加回答はまだありません</span></div><span class="hint">タップして名前・全員の出欠を確認</span></div><span class="chevron" aria-hidden="true">⌄</span></div></summary>
-<div class="details"><h3>出欠の詳細</h3><div class="group"><div class="grouphead"><span class="dot none">−</span>未回答 9人</div><div class="names"><span class="person">講師A</span><span class="person">講師B</span><span class="person">講師C</span><span class="person">講師D</span><span class="person">講師E</span><span class="person">講師F</span><span class="person">講師G</span><span class="person">講師H</span><span class="person">講師I</span></div></div><p class="details-foot">※ お試し版では回答変更・予定編集はできません。</p></div>
-</details>
-<p class="note">💡 現在のアプリとは別ページです。この試作品が気に入らなくても、元の画面に戻す作業は必要ありません。</p>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>【表示比較版】キッズ講師 - 出欠管理</title><link rel="manifest" href="./manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="キッズ出欠"><meta name="application-name" content="キッズ出欠"><meta name="theme-color" content="#1767cf"><link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"><link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png"><style>
+.loading-overlay{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;background:rgba(245,247,251,.94);color:#263044;font-weight:700}.loading-overlay.hidden{display:none}.loading-logo{width:76px;height:76px;object-fit:contain;border-radius:18px;animation:loading-breathe 1.4s ease-in-out infinite}.loading-spinner{width:30px;height:30px;border:4px solid #d7e5fa;border-top-color:#2463db;border-radius:50%;animation:loading-spin .75s linear infinite}@keyframes loading-spin{to{transform:rotate(360deg)}}@keyframes loading-breathe{50%{transform:scale(1.09);opacity:.65}}@media(prefers-reduced-motion:reduce){.loading-logo,.loading-spinner{animation:none}}
+.brand-refresh{display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;padding:0;margin:0;cursor:pointer;border-radius:12px;flex-shrink:0}.brand-refresh:hover{opacity:.8}.brand-refresh:focus-visible{outline:3px solid #2463db;outline-offset:3px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans JP',sans-serif;background:#f5f7fb;color:#263044;margin:0}header{background:#fff;padding:14px 16px;border-bottom:1px solid #ddd}.site-brand{display:flex;align-items:center;gap:12px;max-width:780px;margin:auto}.site-brand img{width:46px;height:46px;object-fit:contain;flex-shrink:0;border-radius:11px}.site-brand h1{font-size:clamp(18px,4.6vw,23px);line-height:1.3;margin:0;font-weight:750}main{max-width:780px;margin:auto;padding:16px}h1{font-size:20px;margin:0 0 6px}.muted{color:#697386;font-size:12px}.tabs,.actions,.people{display:flex;gap:8px;flex-wrap:wrap}.tabs{margin:14px 0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;padding:7px;background:#edf2fa;border:1px solid #dfe7f2;border-radius:17px}
+.tabs button{min-width:0;min-height:64px;padding:10px 5px;display:flex;align-items:center;justify-content:center;gap:7px;border:1px solid transparent;border-radius:12px;background:transparent;color:#53637b;font-weight:750;font-size:14px;line-height:1.25;white-space:nowrap;transition:background .15s,color .15s,box-shadow .15s,transform .15s}
+.tabs button:hover:not(.active){background:#fff;color:#2558a9}
+.tabs button:focus-visible{outline:3px solid #82b5ff;outline-offset:2px}
+.tabs button.active{background:#2463db;color:#fff;border-color:#2463db;box-shadow:0 4px 12px #2463db30}
+.tabs .tab-icon{font-size:19px;line-height:1;flex-shrink:0}
+.tabs button.hidden{display:none}
+@media(max-width:760px){
+.tabs{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:6px;border-radius:15px}
+.tabs.member-only-tabs{grid-template-columns:repeat(4,minmax(0,1fr))}
+.tabs button{flex-direction:column;gap:5px;min-height:65px;padding:8px 3px;font-size:12px;white-space:normal}
+.tabs .tab-icon{font-size:20px}
+}
+@media(max-width:360px){.tabs button{font-size:11px}}
+button,select,input{font:inherit;border:1px solid #cdd4df;border-radius:9px;padding:10px;background:white}button{cursor:pointer}.active,.primary{background:#2463db;color:white;border-color:#2463db}.card{background:white;border:1px solid #e0e5ed;border-radius:14px;padding:15px;margin:10px 0;box-shadow:0 2px 5px #00000008}#future .card:has(> details[open]),#past .card:has(> details[open]){background:#eaf3ff;border-color:#76a9ef;box-shadow:0 0 0 2px #d4e6ff,0 3px 9px #2463db12}#future .card:has(> details[open]),#past .card:has(> details[open])>details>summary{color:#174ca5;font-weight:700}#future .card{transition:background-color .16s,border-color .16s,box-shadow .16s}.top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.place{color:#697386;margin:7px 0 13px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.activity-card{position:relative;padding-left:21px;overflow:hidden}
+.activity-card::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:6px;border-radius:0 6px 6px 0;background:var(--place-color)}
+.place-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid var(--place-color);background:var(--place-bg);color:var(--place-color);font-size:13px;font-weight:700;border-radius:9px}
+.activity-kind{color:#263044;font-weight:600}
+.activity-overview{display:grid;grid-template-columns:70px minmax(125px,1fr) auto auto;gap:12px;align-items:center;min-height:66px}
+.activity-date{display:flex;flex-direction:column;align-items:center;gap:3px}
+.activity-date strong{font-size:23px;line-height:1.1;color:#14243f;white-space:nowrap}
+.activity-date span{font-size:12px;font-weight:700}
+.weekday-date,.weekday-date strong,.weekday-date span{color:#202938}
+.holiday-date,.holiday-date strong,.holiday-date span{color:#d03948}
+#chosenDates .holiday-date{color:#d03948}
+#chosenDates .weekday-date{color:#202938}
+.activity-title{font-size:17px;font-weight:750;color:#14243f}
+.activity-unanswered-badge{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;margin-left:8px;padding:3px 8px;border-radius:999px;background:#fff1f1;border:1px solid #efb3b7;color:#b42332;font-size:12px;font-weight:800;line-height:1.35;white-space:nowrap}
+@media(max-width:500px){.activity-unanswered-badge{margin-left:6px;padding:3px 7px;font-size:12px}}
+
+.activity-time{display:inline-flex;align-items:center;gap:6px;font-size:16px;color:#17426e;margin-top:7px;white-space:nowrap;background:#edf5ff;border:1px solid #d4e7ff;border-radius:9px;padding:6px 10px;line-height:1.2}
+.activity-time strong{font-size:inherit;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.15px}
+.time-clock{font-size:17px;line-height:1}
+@media(max-width:680px){.activity-time{font-size:17px;padding:8px 10px;margin-top:8px;gap:7px}}
+@media(max-width:390px){.activity-time{font-size:16px;padding:7px 8px;gap:4px}}
+.activity-venue{min-width:0}
+.parent-history-nav{display:flex;justify-content:flex-end;margin:10px 0}.parent-history-nav button{background:white;border:1px solid #d9e4f3;border-radius:10px;padding:10px 14px;color:#2455a3;font-weight:700}.parent-instructors{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:13px;padding-top:11px;border-top:1px solid #e6ebf3}.parent-instructors-title{font-size:12px;font-weight:700;color:#52647b;width:100%}.parent-instructor{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:650;background:#f2f6fc;border-radius:20px;padding:5px 10px}.parent-instructor .avatar{width:24px;height:24px}.activity-avatars{display:flex;align-items:center;flex-wrap:wrap;row-gap:5px;padding-right:4px}
+.activity-avatars>span{display:inline-flex;margin-left:-5px;border:2px solid white;border-radius:50%;background:#f3f5f9}
+.activity-avatars>span:first-child{margin-left:0}
+.activity-avatars .avatar{width:29px;height:29px}
+.activity-avatars .avatar-more{height:29px;min-width:29px;padding:0 3px;align-items:center;justify-content:center;font-size:11px;color:#42506a}
+.activity-card .people{margin:12px 0 6px;display:flex;gap:6px;flex-wrap:wrap}
+.activity-card .person{font-size:12px;padding:5px 7px}
+.activity-card .person .avatar{width:21px;height:21px}
+@media(max-width:680px){.activity-overview{grid-template-columns:60px minmax(0,1fr);gap:8px}.activity-venue{grid-column:2;grid-row:2;justify-self:start}.activity-avatars{grid-column:1 / -1;grid-row:3;justify-self:start;max-width:100%}.activity-date{grid-row:1 / span 2}.activity-title{font-size:15px}.activity-date strong{font-size:20px}.place-badge{font-size:12px;padding:4px 7px}}
+@media(max-width:390px){.activity-overview{grid-template-columns:50px minmax(0,1fr)}.activity-avatars .avatar{width:25px;height:25px}}
+
+.venue-satoyama{--place-color:#149866;--place-bg:#e8f8f0}
+.venue-drama{--place-color:#1478e9;--place-bg:#eaf3ff}
+.venue-multi{--place-color:#089db6;--place-bg:#e7faff}
+.venue-perfo{--place-color:#e98716;--place-bg:#fff3e5}
+.venue-training{--place-color:#8445dc;--place-bg:#f3ecff}
+.venue-other{--place-color:#db388c;--place-bg:#fff0f7}.person{background:#f3f5f9;border-radius:8px;padding:7px 9px;font-size:13px;display:inline-flex;align-items:center;gap:6px}.avatar{width:25px;height:25px;border-radius:50%;object-fit:cover;flex:none;background:#dce9ff}.avatar-fallback{display:inline-flex;align-items:center;justify-content:center;color:#285aa5;font-weight:700;font-size:12px}.yes{color:#16824a;font-weight:bold}.no{color:#c43d43;font-weight:bold}.maybe{color:#aa7600;font-weight:bold}.unknown{color:#89909e;font-weight:bold}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.fields label{display:flex;flex-direction:column;gap:5px;font-size:13px}.fields input,.fields select{width:100%;box-sizing:border-box}.wide{grid-column:1/-1}.small{font-size:12px}.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}.status{padding:7px 10px}.status.sel{background:#dce9ff;border-color:#2463db}.bulk-entry{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid #e8ecf2}.bulk-entry:last-of-type{border-bottom:0}.bulk-info{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1 1 260px}.bulk-options{display:flex;gap:8px;flex-wrap:wrap}.bulk-choice{cursor:pointer;display:inline-flex;position:relative}.bulk-choice input{position:absolute;opacity:0;width:1px;height:1px;padding:0;margin:0}.bulk-choice span{display:flex;align-items:center;justify-content:center;min-width:46px;min-height:44px;box-sizing:border-box;padding:8px 13px;border:1px solid #cdd4df;border-radius:10px;background:#fff;color:#263044;font-weight:700;font-size:20px;transition:background .12s,border-color .12s,color .12s}.bulk-choice input:checked+span{background:#16824a;color:#fff;border-color:#16824a}.bulk-choice input:focus-visible+span{outline:3px solid #2463db;outline-offset:2px}
+.time-title{font-size:13px;margin:0 0 8px}
+/* Larger, accessible labels and choices in the schedule creation form only */
+#create .time-title{font-size:18px;font-weight:800;color:#24324a;margin:18px 0 11px;line-height:1.45}
+#create .fields>label,#create .fields .fields label,#create .card>label{font-size:17px;font-weight:700;color:#24324a;line-height:1.5}
+#create .time-choice{font-size:16px}
+#create .time-choice span{font-size:16px;min-height:50px;padding:12px 16px;line-height:1.4}
+#create input[type="date"],#create input[type="time"],#create input[type="text"],#create #customKind,#create #customPlace{font-size:17px;min-height:46px}
+#create #pushdate,#create #add{font-size:17px;min-height:46px}
+#create #chosenDates{font-size:16px;font-weight:500}
+@media(max-width:500px){#create .time-title{font-size:18px}#create .time-choice span{font-size:16px;padding:12px 8px;min-height:54px}#create .fields>label,#create .fields .fields label,#create .card>label{font-size:17px}}
+.time-options{display:flex;flex-wrap:wrap;gap:8px}.fields .time-choice{position:relative;display:inline-flex;flex-direction:row;cursor:pointer;font-size:14px}.time-choice input{position:absolute;opacity:0;width:1px;height:1px;margin:0;padding:0}.time-choice span{display:flex;align-items:center;justify-content:center;min-height:44px;box-sizing:border-box;padding:10px 14px;border:1px solid #cdd4df;border-radius:10px;background:#fff;color:#263044;font-weight:600}.time-choice input:checked+span{background:#16824a;color:white;border-color:#16824a}.time-choice input:focus-visible+span{outline:3px solid #2463db;outline-offset:2px}@media(max-width:500px){.fields .time-choice{flex:1 1 calc(50% - 8px)}.time-choice span{width:100%;padding:10px 8px}}@media(max-width:500px){.bulk-entry{align-items:flex-start}.bulk-info{flex-basis:100%}.bulk-options{width:100%}.bulk-choice{flex:1}.bulk-choice span{width:100%}}
+
+/* Always-visible, multi-select calendar */
+.create-calendar{max-width:520px;margin:15px 0 12px;padding:12px;border:1px solid #d9e4f4;background:#f9fbff;border-radius:15px}
+.create-calendar-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.create-calendar-header strong{font-size:19px;color:#24324a}
+.create-calendar-header button{width:43px;height:43px;padding:0;font-size:27px;line-height:1;color:#2463db;border:1px solid #d8e2f1;border-radius:10px;background:white}
+.create-calendar-weekdays,.create-calendar-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;text-align:center}
+.create-calendar-weekdays{margin-bottom:7px;color:#566780;font-size:13px;font-weight:750}
+.create-calendar-weekdays span:first-child,.create-calendar-weekdays span:last-child{color:#d03948}
+.create-calendar-days .calendar-day{width:100%;min-width:0;aspect-ratio:1/1;min-height:39px;padding:0;border:1px solid transparent;border-radius:10px;background:white;font-size:16px;font-weight:700}
+.create-calendar-days .calendar-day.holiday-date{color:#d03948}
+.create-calendar-days .calendar-day.weekday-date{color:#202938}
+.create-calendar-days .calendar-day.calendar-today{border-color:#87abea}
+.create-calendar-days .calendar-day.calendar-selected{background:#2463db;color:white;border-color:#2463db;box-shadow:0 2px 7px #2463db30}
+.create-calendar-days .calendar-day:focus-visible{outline:3px solid #80aafa;outline-offset:2px}
+.selected-dates-heading{font-size:16px;font-weight:800;color:#263044;margin:15px 0 7px}
+.selected-dates-heading span{color:#2463db;font-size:14px}
+.chosen-date-list{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+.chosen-date-list .muted{margin:0}
+.chosen-date{display:inline-flex;align-items:center;gap:7px;padding:6px 8px 6px 11px;background:#edf4ff;border:1px solid #d7e6ff;border-radius:9px;font-size:14px;font-weight:700}
+.chosen-date button{padding:0;width:24px;height:24px;line-height:1;border:0;border-radius:7px;background:#dbe8fa;color:#315b99;font-size:18px}
+@media(max-width:390px){.create-calendar{padding:8px}.create-calendar-days,.create-calendar-weekdays{gap:3px}.create-calendar-days .calendar-day{min-height:36px;font-size:15px}}
+/* Past activity archive */
+.past-heading,.member-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.past-heading h3,.member-heading h3{margin:0}
+.past-count,.member-count{background:#edf4ff;color:#2459aa;border-radius:20px;padding:6px 11px;font-size:13px;font-weight:800}
+.past-month-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 12px;background:#f6f9ff;border-radius:12px;padding:7px}
+.past-month-nav strong{font-size:19px;color:#24324a}
+.past-month-nav button{width:44px;height:44px;font-size:28px;line-height:1;border:1px solid #d7e0ed;border-radius:10px;background:#fff;color:#2463db}
+.past-month-nav button:disabled{opacity:.35;cursor:default}
+.past-filters{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.past-filters label{display:flex;flex-direction:column;gap:5px;font-size:14px;font-weight:700;color:#34435d}
+.past-filters label:last-child{grid-column:1/-1}
+.past-filters select{width:100%;min-width:0;min-height:44px;font-size:16px}
+.past-export{width:100%;margin-top:13px;min-height:46px;background:#edf4ff;border:1px solid #b9d0f8;color:#2059ae;font-size:15px;font-weight:750;border-radius:10px}
+.past-toolbar .small{margin:10px 0 0}
+.past-result-count{font-size:14px;font-weight:700}
+.past-more-options{margin-top:12px;border-top:1px solid #e4eaf3;padding-top:10px}
+.past-more-options>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:7px 10px;border-radius:9px;background:#f6f9ff;color:#2463db;font-size:15px;font-weight:750}
+.past-more-options>summary::-webkit-details-marker{display:none}
+.past-more-options>summary::after{content:"▾";font-size:20px;transition:transform .15s}
+.past-more-options[open]>summary::after{transform:rotate(180deg)}
+.past-more-options .past-filters{margin-top:13px}
+/* Member directory */
+.member-card{padding:14px 0;border-bottom:1px solid #e6ebf3}
+.member-card-top{display:flex;align-items:center;gap:11px}
+.member-card-top>.avatar{width:46px;height:46px;font-size:19px}
+.member-card-name{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+.member-card-name strong{font-size:17px;overflow-wrap:anywhere}
+.member-card-name span{font-size:12px;color:#64748b}
+.member-approved{font-size:12px;font-weight:750;color:#16824a;background:#e8f8ef;border-radius:18px;padding:6px 8px;white-space:nowrap}
+.member-details{margin:9px 0 0 57px}
+.member-details summary{cursor:pointer;font-size:13px;color:#3465b1;font-weight:700}
+.member-uid{font-size:12px;color:#586477;overflow-wrap:anywhere;margin:9px 0}
+.member-role-control{display:flex;align-items:center;gap:9px;margin:12px 0;flex-wrap:wrap}.member-role-control label{font-size:13px;font-weight:700;color:#40536b}.member-role-control select{width:auto;min-width:135px;padding:9px;border:1px solid #cbd5e1;border-radius:9px;background:white}.member-details .danger{font-size:13px;padding:8px 11px}
+.member-add{background:#f6f9ff;border:1px solid #e1eaf6;border-radius:13px;padding:15px;margin-top:18px}
+.member-add h3{font-size:17px;margin:0 0 10px}
+.member-add input{font-size:16px;min-height:44px}
+.member-add button{min-height:44px;margin-top:10px}
+.hidden{display:none}textarea{width:100%;box-sizing:border-box;min-height:120px;padding:10px;border-radius:9px;border:1px solid #cdd4df}details{margin-top:10px}summary{cursor:pointer;color:#2463db}footer{padding:15px;color:#697386;font-size:12px;text-align:center}.unanswered-alert{margin:10px 0 12px;border:1px solid #f3c8cf;background:#fff4f5;border-radius:12px;padding:0}.unanswered-alert summary{list-style:none;cursor:pointer;color:#ae1e31;font-size:14px;font-weight:700;padding:12px 14px}.unanswered-alert summary::-webkit-details-marker{display:none}.unanswered-alert summary::before{content:"!";display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#c6283e;color:white;margin-right:8px;font-weight:700}.unanswered-alert summary::after{content:" ▾";font-size:12px}.unanswered-alert[open] summary::after{content:" ▴"}.unanswered-list{border-top:1px solid #f3c8cf;padding:5px 10px 10px}.unanswered-item{display:block;width:100%;text-align:left;border:1px solid #f0d5d9;border-radius:8px;margin-top:7px;background:#fff;color:#263044;font-size:13px;padding:10px}.unanswered-item:hover,.unanswered-item:focus-visible{background:#fff8f9}.profile-details{border-top:1px solid #e5e9f0;padding-top:10px}.profile-details summary{font-size:13px;font-weight:600;list-style-position:inside}.profile-details[open] summary{margin-bottom:12px}.profile-details input{max-width:100%;box-sizing:border-box}@media(max-width:500px){.fields{grid-template-columns:1fr}.wide{grid-column:auto}.person{font-size:12px;padding:6px}.card{padding:12px}}
+.auth-header{display:flex;align-items:center;gap:11px;min-height:40px}.auth-avatar{width:40px;height:40px;flex:0 0 40px;border-radius:50%;object-fit:cover;border:2px solid #e0e9f7;background:#eef3fa}.auth-header strong{font-size:18px}.auth-header #authstate{flex:1;min-width:0;overflow-wrap:anywhere}.auth-header #parentLogout{margin-left:auto;flex-shrink:0}.auth-header #parentLogout button{font-size:13px;padding:8px 11px;background:#f7f9fc;border:1px solid #d6dfe9;color:#56647b;border-radius:9px}@media(max-width:420px){.auth-header strong{font-size:15px}.auth-header{gap:8px}}.profile-logout{border-top:1px solid #e5eaf2;margin-top:14px;padding-top:12px;display:flex;justify-content:flex-end}.profile-logout button{color:#56647b;background:#f7f9fc;border:1px solid #d6dfe9;font-size:14px}.authbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:10px 0}.notice{background:#fff7e4;border:1px solid #ead7a2;padding:12px;border-radius:10px;margin:12px 0}.error{background:#fff0f0;color:#a32323}.admin{border:1px solid #dce2ee;padding:12px;border-radius:12px;margin-top:12px}.uid{overflow-wrap:anywhere;font-size:12px;background:#eef2f9;padding:10px;border-radius:8px}.people{margin:10px 0}.status{min-width:80px}.danger{color:#b42d2d}
+.delete-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin:15px 0}.delete-toolbar label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700;flex:1 1 125px}.delete-toolbar select{width:100%;min-width:0}
+.delete-list{display:grid;gap:8px;margin:12px 0}.delete-entry{display:flex;align-items:center;gap:12px;border:1px solid #e0e5ed;border-radius:11px;padding:12px;cursor:pointer;background:#fff}.delete-entry:has(input:checked){background:#fff6f6;border-color:#f0b9bf}.delete-entry input{width:20px;height:20px;flex-shrink:0;accent-color:#c12e42}.delete-entry-content{display:flex;flex-direction:column;gap:4px;min-width:0}.delete-entry-content strong{font-size:15px}.delete-entry-content small{color:#66748a;overflow-wrap:anywhere}.delete-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.delete-danger{background:#b42332;color:#fff;border-color:#b42332}.delete-danger:disabled{opacity:.45;cursor:not-allowed}.delete-confirm{margin-top:15px;padding:15px;background:#fff6f6;border:1px solid #efb3b7;border-radius:12px}.delete-confirm strong{color:#a32030}.delete-confirm .row{margin-top:12px;gap:8px}.delete-confirm .row button{flex:1 1 150px}.delete-summary{font-size:14px;color:#66748a}.delete-empty{color:#66748a;padding:12px 0}
+@media(max-width:760px){.tabs:not(.member-only-tabs){grid-template-columns:repeat(3,minmax(0,1fr))}}
+.hidden{display:none!important}
+/* Compact comparison mode: event overview is the disclosure trigger. */
+#future .activity-card:has(> .compact-event-details),
+#past .activity-card:has(> .compact-event-details){padding:0}
+.compact-event-details{margin:0}
+.compact-event-summary{display:block;list-style:none;padding:11px 14px 10px 19px;color:inherit;cursor:pointer}
+.compact-event-summary::-webkit-details-marker{display:none}
+.compact-event-summary:focus-visible{outline:3px solid #82b5ff;outline-offset:-3px;border-radius:12px}
+.compact-event-summary .activity-overview{grid-template-columns:58px minmax(0,1fr);gap:6px 9px;min-height:0;align-items:start}
+.compact-event-summary .activity-date{grid-row:1 / span 2;align-self:start}
+.compact-event-summary .activity-title{font-size:15px;line-height:1.4}
+.compact-event-summary .activity-time{font-size:13px;padding:4px 7px;margin-top:4px;gap:4px}
+.compact-event-summary .time-clock{font-size:13px}
+.compact-event-summary .activity-venue{grid-column:2;grid-row:2;justify-self:start}
+.compact-event-summary .place-badge{font-size:11px;padding:3px 7px}
+.compact-event-summary .activity-avatars{grid-column:2;grid-row:3;justify-self:start;max-width:100%;margin-top:3px;row-gap:5px}
+.compact-event-summary .activity-avatars .avatar{width:27px;height:27px}
+.compact-event-summary .activity-avatars::after{content:attr(data-attendees);font-size:11px;font-weight:700;color:#16824a;align-self:center;margin-left:6px;white-space:nowrap}
+.compact-event-summary .activity-avatars[data-attendees="○ 0人"]::after{color:#89909e}
+.compact-open-hint{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#77869b;margin:6px 0 0 67px}
+.compact-chevron{font-size:18px;line-height:1;transition:transform .15s}
+.compact-event-details[open] .compact-chevron{transform:rotate(180deg)}
+.compact-detail-body{border-top:1px solid #e1e8f1;padding:11px 14px 14px 19px;background:#fbfdff}
+.compact-detail-body .people{margin:2px 0 12px}
+.compact-edit-label{font-size:13px;font-weight:750;color:#2455a3;border-top:1px dashed #dbe4ef;padding-top:11px;margin-top:10px}
+.preview-warning{max-width:780px;margin:12px auto 0;padding:10px 13px;box-sizing:border-box;background:#fff8e5;border:1px solid #edda9d;border-radius:11px;font-size:12px;line-height:1.5;color:#75561c}
+.preview-warning strong{display:block;font-size:13px}
+.preview-label{font-size:11px;background:#fff2d2;color:#8a5c10;border-radius:7px;padding:3px 6px;vertical-align:middle;white-space:nowrap}
+@media(max-width:390px){
+.compact-event-summary{padding:10px 11px 9px 18px}
+.compact-event-summary .activity-overview{grid-template-columns:50px minmax(0,1fr);gap:5px 7px}
+.compact-event-summary .activity-time{font-size:12px;padding:4px 6px}
+.compact-event-summary .activity-avatars .avatar{width:25px;height:25px}
+.compact-open-hint{margin-left:57px}
+}
+</style></head><body>
+<div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="読み込み中"><img class="loading-logo" src="./icon-192.png" alt=""><div class="loading-spinner" aria-hidden="true"></div><span id="loadingText">読み込み中です…</span></div>
+<header><div class="site-brand"><button type="button" id="refreshLogo" class="brand-refresh" title="画面を更新" aria-label="ロゴを押して画面を更新"><img src="./icon-192.png" alt="" width="46" height="46"></button><h1>キッズ講師 - 出欠管理 <span class="preview-label">表示比較版</span></h1></div></header><main>
+<div class="preview-warning" role="note"><strong>🧪 本番と同じデータを使う表示比較版です</strong>○の人のアイコンだけを一覧表示し、タップすると出欠詳細や編集画面が開きます。<b>ログイン・回答・予定登録・編集・削除は本番と共通で、保存すると本番にも反映されます。</b> 比較だけなら保存操作はしないでください。 <a href="./kids_attendance_v2.html">通常版に戻る</a></div>
+<div id="auth" class="card"><div class="auth-header"><img id="authavatar" class="auth-avatar hidden" alt="Googleプロフィール画像" referrerpolicy="no-referrer"><strong id="authstate">ログインしてください</strong><div id="parentLogout" class="hidden"><button type="button" id="parentLogoutButton">ログアウト</button></div></div><div class="authbar"><button id="login" class="primary">Googleでログイン</button></div><details id="unansweredAlert" class="hidden unanswered-alert"><summary id="unansweredSummary"></summary><div id="unansweredList" class="unanswered-list"></div></details><details id="myname" class="hidden profile-details"><summary>表示名を変更する</summary><div class="row"><label for="mynameinput">自分の表示名</label><input id="mynameinput" maxlength="30" placeholder="例：かなこ"><button id="savemyname">名前を保存</button></div><p id="mynamehint" class="muted"></p><div class="profile-logout"><button id="logout" class="hidden" type="button">ログアウト</button></div></details><div id="pending" class="hidden notice"><strong>承認待ちです</strong><p>管理者に登録してもらうまで予定は表示されません。</p><div class="uid" id="uid"></div><button id="copyuid">ユーザーIDをコピー</button></div></div>
+<div id="app" class="hidden"><nav class="tabs" aria-label="画面の切り替え">
+<button type="button" data-tab="future" class="active"><span class="tab-icon" aria-hidden="true">📅</span><span class="tab-label">今後の活動</span></button>
+<button type="button" data-tab="bulk"><span class="tab-icon" aria-hidden="true">✅</span><span class="tab-label">まとめて回答</span></button>
+<button type="button" data-tab="create"><span class="tab-icon" aria-hidden="true">➕</span><span class="tab-label">予定を登録</span></button>
+<button type="button" data-tab="past"><span class="tab-icon" aria-hidden="true">📚</span><span class="tab-label">過去の活動</span></button>
+<button type="button" data-tab="members" id="membersTab" class="hidden"><span class="tab-icon" aria-hidden="true">👥</span><span class="tab-label">メンバーの管理</span></button>
+<button type="button" data-tab="deleteManager" id="deleteManagerTab" class="hidden"><span class="tab-icon" aria-hidden="true">🗑️</span><span class="tab-label">予定の一括削除</span></button>
+</nav>
+<div id="message" class="hidden notice"></div><section id="future"></section><section id="bulk" class="hidden"></section>
+<section id="create" class="hidden"><div class="card"><h3>🗓️ 予定をまとめて登録</h3><p class="muted">カレンダーの日付をタップすると予定日が追加されます。複数日選択でき、もう一度タップすると解除できます。</p><div class="create-calendar" aria-label="活動日付の選択"><div class="create-calendar-header"><button type="button" id="calendarPrev" aria-label="前の月">‹</button><strong id="calendarMonth"></strong><button type="button" id="calendarNext" aria-label="次の月">›</button></div><div class="create-calendar-weekdays"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div><div id="calendarDays" class="create-calendar-days"></div></div><div class="selected-dates-heading">📅 選択した日付 <span id="selectedDateCount">0日</span></div><div id="chosenDates" class="chosen-date-list" aria-live="polite"></div><div class="fields"><div class="wide"><div class="time-title">🎭 活動の種類</div><div class="time-options" role="radiogroup" aria-label="活動の種類"><label class="time-choice"><input type="radio" name="kindPreset" value="通常活動" checked><span>🐦 通常活動</span></label><label class="time-choice"><input type="radio" name="kindPreset" value="あそぼう"><span>🎈 あそぼう</span></label><label class="time-choice"><input type="radio" name="kindPreset" value="忍者"><span>🥷 忍者</span></label><label class="time-choice"><input type="radio" name="kindPreset" value="合宿"><span>🏕️ 合宿</span></label><label class="time-choice"><input type="radio" name="kindPreset" value="other"><span>✨ 自由入力</span></label></div></div><label id="customLabel" class="wide hidden">✨ イベント名<input id="customKind" placeholder="イベント名を入力してください"></label><div class="wide"><div class="time-title">🕒 活動時間</div><div class="time-options" role="radiogroup" aria-label="活動時間">
+<label class="time-choice"><input type="radio" name="timePreset" value="09:00-18:00" checked><span>9時〜18時</span></label>
+<label class="time-choice"><input type="radio" name="timePreset" value="12:00-18:00"><span>12時〜18時</span></label>
+<label class="time-choice"><input type="radio" name="timePreset" value="18:00-23:00"><span>18時〜23時</span></label>
+<label class="time-choice"><input type="radio" name="timePreset" value="allDay"><span>終日</span></label>
+<label class="time-choice"><input type="radio" name="timePreset" value="custom"><span>自由入力</span></label>
+</div><input id="allDay" type="checkbox" class="hidden" aria-hidden="true" tabindex="-1"></div>
+<div id="customTimes" class="wide hidden"><div class="fields"><label>🟢 開始時間<input id="start" type="time" value="09:00"></label><label>🔴 終了時間<input id="end" type="time" value="18:00"></label></div></div><div class="wide"><div class="time-title">📍 活動場所</div><div class="time-options" role="radiogroup" aria-label="活動場所"><label class="time-choice"><input type="radio" name="placePreset" value="里山" checked><span>里山</span></label><label class="time-choice"><input type="radio" name="placePreset" value="ドラマ" ><span>ドラマ</span></label><label class="time-choice"><input type="radio" name="placePreset" value="マルチ" ><span>マルチ</span></label><label class="time-choice"><input type="radio" name="placePreset" value="パフォ" ><span>パフォ</span></label><label class="time-choice"><input type="radio" name="placePreset" value="研修室" ><span>研修室</span></label><label class="time-choice"><input type="radio" name="placePreset" value="自由入力" ><span>自由入力</span></label></div></div><label id="customPlaceLabel" class="wide hidden">✏️ 活動場所を入力<input id="customPlace" maxlength="100" placeholder="活動場所を入力してください"></label></div><p><button class="primary" id="add">まとめて登録する</button></p></div></section>
+<section id="past" class="hidden"></section><section id="deleteManager" class="hidden"></section><section id="members" class="hidden"><div class="card"><div class="member-heading"><h3>👥 メンバーの管理</h3><span id="memberCount" class="member-count">0 / 10人</span></div><p class="muted">登録中の講師と権限を確認できます。</p><div id="memberlist"></div><div class="member-add"><h3>➕ 新しいメンバーを承認</h3><p class="muted">相手が一度Googleログインして表示されたユーザーIDを入力してください。</p><label>ユーザーID（UID）<input id="memberuid" placeholder="相手が送ってくれたユーザーID"></label><p class="small muted">表示名は本人が登録します。</p><button id="addmember" class="primary">メンバーを承認する</button></div></div></section></div>
 </main>
-</body>
-</html>
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
+import {getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,query,where,orderBy,serverTimestamp,writeBatch,Timestamp,runTransaction,arrayUnion,arrayRemove} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+const firebaseConfig={apiKey:'AIzaSyCbE1BqIxMGke2vT4FcyZKWLqQX6YmzEsU',authDomain:'kids-attendance-b89d4.firebaseapp.com',projectId:'kids-attendance-b89d4',storageBucket:'kids-attendance-b89d4.firebasestorage.app',messagingSenderId:'408668881637',appId:'1:408668881637:web:63464582c7bd720949ca0c'};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();
+const $=id=>document.getElementById(id);const loadingTasks=new Set(['startup']);function setLoading(key,active,message='読み込み中です…'){active?loadingTasks.add(key):loadingTasks.delete(key);$('loadingOverlay').classList.toggle('hidden',loadingTasks.size===0);if(active)$('loadingText').textContent=message}const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const bulkDrafts=new Map();const deleteSelection=new Set();let deletePeriod='future',deleteMonth='all',deleteKind='all',deletePlace='all',deleteConfirm=false,deleteBusy=false;let futureMonth='';let pastYear='',pastMonth='',pastKind='all',pastOptionsOpen=false,pastEvents=[],pastLoading=false,pastLoadedMonth='',pastRequest=0,deleteHistory=[],deleteHistoryLoaded=false,deleteHistoryLoading=false;let myPendingName='',me=null,profile=null,members=[],events=[],tab='future',unsubs=[],answerUnsubs=new Map();
+const clean=()=>{[...unsubs,...answerUnsubs.values()].forEach(fn=>fn());unsubs=[];answerUnsubs.clear();members=[];events=[];profile=null;myPendingName='';deleteSelection.clear();deleteConfirm=false;deleteBusy=false;pastEvents=[];pastLoadedMonth='';pastLoading=false;pastRequest++;deleteHistory=[];deleteHistoryLoaded=false;deleteHistoryLoading=false;};
+function notify(s,bad=false){$('message').textContent=s;$('message').className='notice'+(bad?' error':'');}
+function fail(e){console.error('Firestore operation failed:',{code:e?.code,message:e?.message,name:e?.name,stack:e?.stack},e);notify('操作できませんでした'+(e?.code?' ['+e.code+']':'')+'：'+(e?.message||String(e)),true)}
+// Japanese national holidays, including substitute holidays and citizens' holidays (2000–2099).
+const holidayCache=new Map();
+function japaneseHolidays(year){
+  if(holidayCache.has(year))return holidayCache.get(year);
+  const holidays=new Set();
+  const add=(month,day)=>holidays.add(year+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0'));
+  const nthMonday=(month,n)=>{const first=new Date(Date.UTC(year,month-1,1)).getUTCDay();return 1+(8-first)%7+(n-1)*7};
+  const spring=Math.floor(20.8431+0.242194*(year-1980)-Math.floor((year-1980)/4));
+  const autumn=Math.floor(23.2488+0.242194*(year-1980)-Math.floor((year-1980)/4));
+  add(1,1);add(1,nthMonday(1,2));add(2,11);
+  if(year>=2020)add(2,23);
+  add(3,spring);add(4,29);add(5,3);add(5,4);add(5,5);
+  if(year===2020){add(7,23);add(8,10);add(9,nthMonday(9,3));add(9,autumn);add(11,3);add(11,23);add(7,24)}
+  else if(year===2021){add(7,22);add(7,23);add(8,8);add(9,nthMonday(9,3));add(9,autumn);add(11,3);add(11,23)}
+  else{add(7,nthMonday(7,3));if(year>=2016)add(8,11);add(9,nthMonday(9,3));add(9,autumn);add(10,nthMonday(10,2));add(11,3);add(11,23)}
+  if(year<=2018)add(12,23);
+  // A one-off national holiday for the enthronement in 2019.
+  if(year===2019){add(5,1);add(10,22)}
+  const key=d=>d.toISOString().slice(0,10);
+  const start=new Date(Date.UTC(year,0,1)),end=new Date(Date.UTC(year+1,0,1));
+  // Citizens' holidays: a weekday between two national holidays.
+  for(let d=new Date(start);d<end;d.setUTCDate(d.getUTCDate()+1)){
+    if(d.getUTCDay()===0||holidays.has(key(d)))continue;
+    const prev=new Date(d),next=new Date(d);prev.setUTCDate(prev.getUTCDate()-1);next.setUTCDate(next.getUTCDate()+1);
+    if(holidays.has(key(prev))&&holidays.has(key(next)))holidays.add(key(d));
+  }
+  const national=[...holidays];
+  // Sunday national holidays shift to the first following non-holiday.
+  for(const h of national){const d=new Date(h+'T00:00:00Z');if(d.getUTCDay()!==0)continue;
+    do{d.setUTCDate(d.getUTCDate()+1)}while(holidays.has(key(d)));
+    if(d.getUTCFullYear()===year)holidays.add(key(d));
+  }
+  holidayCache.set(year,holidays);return holidays;
+}
+function dateColorClass(s){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(s||''))return '';
+  const d=new Date(s+'T12:00:00');
+  return d.getDay()===0||d.getDay()===6||japaneseHolidays(d.getFullYear()).has(s)?'holiday-date':'weekday-date';
+}
+const dateLabel=s=>{let d=new Date(s+'T12:00:00');return `${d.getMonth()+1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`};
+const today=()=>{let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+function status(s){return `<span class="${s==='○'?'yes':s==='×'?'no':s==='△'?'maybe':'unknown'}">${esc(s||'－')}</span>`}
+function nameFor(uid){return members.find(m=>m.id===uid)?.name||'メンバー'}
+function memberAvatar(m){const url=m.photoURL||'';const safe=/^https:\/\/(?:lh[0-9]+\.googleusercontent\.com|[a-z0-9.-]+\.googleusercontent\.com)\//i.test(url);return safe?`<img class="avatar" src="${esc(url)}" alt="" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'avatar avatar-fallback',textContent:this.dataset.initial}))" data-initial="${esc((m.name||'?').slice(0,1))}">`:`<span class="avatar avatar-fallback">${esc((m.name||'?').slice(0,1))}</span>`}
+function pastRoster(e){
+  const parentIds=new Set(members.filter(m=>m.role==='parent').map(m=>m.id));const roster=members.filter(m=>m.role!=='parent'),seen=new Set([...roster.map(m=>m.id),...parentIds]);
+  for(const m of e.formerMembers||[]){if(!m?.id||seen.has(m.id))continue;roster.push(m);seen.add(m.id)}
+  for(const uid of Object.keys(e.answers||{})){if(seen.has(uid))continue;roster.push({id:uid,name:'退会メンバー（名前未保存）'});seen.add(uid)}
+  return roster;
+}
+function activityEmoji(kind){
+  const name=String(kind||'通常活動').trim();
+  return ({'通常活動':'🐦','あそぼう':'🎈','忍者':'🥷','合宿':'🏕️'})[name]||'✨';
+}
+function venueClass(place){
+  const name=String(place||'').trim();
+  if(name==='里山'||name.includes('里山'))return 'venue-satoyama';
+  if(name==='ドラマ'||name.includes('ドラマ工房'))return 'venue-drama';
+  if(name==='マルチ'||name.includes('マルチ'))return 'venue-multi';
+  if(name==='パフォ'||name.includes('パフォ'))return 'venue-perfo';
+  if(name==='研修室'||name.includes('研修室'))return 'venue-training';
+  return 'venue-other';
+}
+function card(e){if(profile?.role==='parent'){const confirmed=e.instructors||[];return `<article class="card activity-card ${venueClass(e.place)}"><div class="activity-overview"><div class="activity-date ${dateColorClass(e.date)}"><strong>${Number(e.date.slice(5,7))}/${Number(e.date.slice(8,10))}</strong><span>（${'日月火水木金土'[new Date(e.date+'T12:00:00').getDay()]}）</span></div><div class="activity-info"><div class="activity-title">${activityEmoji(e.kind)} ${esc(e.kind||'通常活動')}</div><div class="activity-time"><span class="time-clock" aria-hidden="true">🕒</span><strong>${e.allDay?'終日':esc(e.start)+' 〜 '+esc(e.end)}</strong></div></div><div class="activity-venue"><span class="place-badge">📍 ${esc(e.place||'未設定')}</span></div></div>${e.date>=today()?`<div class="parent-instructors"><div class="parent-instructors-title">👥 活動する講師</div>${confirmed.length?confirmed.map(m=>`<span class="parent-instructor">${memberAvatar(m)}${esc(m.name)}</span>`).join(''):'<span class="muted">参加講師はまだ確定していません</span>'}</div>`:''}</article>`;}
+const isFuture=e.date>=today(),roster=isFuture?members.filter(m=>m.role!=='parent'):pastRoster(e),isUnanswered=isFuture&&!['○','△','×'].includes(e.answers?.[me.uid]),attendees=roster.filter(m=>e.answers?.[m.id]==='○');return `<article class="card activity-card ${venueClass(e.place)}" data-event-id="${esc(e.id)}"><details class="compact-event-details"><summary class="compact-event-summary"><div class="activity-overview"><div class="activity-date ${dateColorClass(e.date)}"><strong>${Number(e.date.slice(5,7))}/${Number(e.date.slice(8,10))}</strong><span>（${'日月火水木金土'[new Date(e.date+'T12:00:00').getDay()]}）</span></div><div class="activity-info"><div class="activity-title">${activityEmoji(e.kind)} ${esc(e.kind||"通常活動")}${isUnanswered?'<span class="activity-unanswered-badge">未回答</span>':''}</div><div class="activity-time"><span class="time-clock" aria-hidden="true">🕒</span><strong>${e.allDay?'終日':esc(e.start)+' 〜 '+esc(e.end)}</strong></div></div><div class="activity-venue"><span class="place-badge">📍 ${esc(e.place||"未設定")}</span></div><div class="activity-avatars" aria-label="参加するメンバー" data-attendees="○ ${attendees.length}人">${attendees.map(m=>`<span title="${esc(m.name)}（参加）">${memberAvatar(m)}</span>`).join('')}</div></div><div class="compact-open-hint">タップして全員の出欠・回答を表示 <span class="compact-chevron" aria-hidden="true">⌄</span></div></summary><div class="compact-detail-body"><div class="people">${roster.map(m=>`<div class="person">${memberAvatar(m)}<span>${esc(m.name)}</span> ${status(e.answers?.[m.id])}</div>`).join('')}</div><div class="compact-edit-label">${profile.role==='admin'?'自分の出欠を変更 / 予定を編集':'自分の出欠を変更'}</div><div class="row">${['○','△','×'].map(s=>`<button class="status ${e.answers?.[me.uid]===s?'sel':''}" data-answer="${esc(e.id)}" data-value="${s}">${s==='○'?'○ 参加':s==='△'?'△ 未定':'× 欠席'}</button>`).join('')}</div>${profile.role==='admin'?`<div class="fields"><label class="wide">🎭 活動の種類<select data-kind-choice="${esc(e.id)}">${['通常活動','あそぼう','忍者','合宿'].map(k=>`<option value="${k}" ${(e.kind||'通常活動')===k?'selected':''}>${activityEmoji(k)} ${k}</option>`).join('')}<option value="custom" ${!['通常活動','あそぼう','忍者','合宿'].includes(e.kind||'通常活動')?'selected':''}>✨ 自由入力</option></select></label><label class="wide ${['通常活動','あそぼう','忍者','合宿'].includes(e.kind||'通常活動')?'hidden':''}" data-custom-kind-wrap="${esc(e.id)}">✨ 活動名を自由入力<input data-field="kind" data-id="${esc(e.id)}" maxlength="100" placeholder="活動名を入力" value="${esc(e.kind||'')}"></label><label>日付<input type="date" data-field="date" data-id="${esc(e.id)}" value="${esc(e.date)}"></label><label>場所<select data-place-choice="${esc(e.id)}">${['里山','ドラマ','マルチ','パフォ','研修室'].map(p=>`<option value="${p}" ${e.place===p?'selected':''}>${p}</option>`).join('')}<option value="custom" ${!['里山','ドラマ','マルチ','パフォ','研修室'].includes(e.place)?'selected':''}>自由入力</option></select></label><label class="wide ${['里山','ドラマ','マルチ','パフォ','研修室'].includes(e.place)?'hidden':''}" data-custom-place-wrap="${esc(e.id)}">活動場所を自由入力<input data-field="place" data-id="${esc(e.id)}" maxlength="100" placeholder="活動場所を入力" value="${esc(e.place||'')}"></label><label class="wide" style="flex-direction:row;align-items:center"><input type="checkbox" data-field="allDay" data-id="${esc(e.id)}" ${e.allDay?"checked":""} style="width:auto"> 終日</label><label>開始<input type="time" data-field="start" data-id="${esc(e.id)}" value="${esc(e.start)}" ${e.allDay?"disabled":""}></label><label>終了<input type="time" data-field="end" data-id="${esc(e.id)}" value="${esc(e.end)}" ${e.allDay?"disabled":""}></label></div><div class="row"><button type="button" class="danger" data-delete-event="${esc(e.id)}">この予定を削除</button></div><p class="small muted">出欠は本人のみ変更可能。予定の編集・削除は管理者のみ可能。</p>`:'<p class="small muted">出欠はいつでも本人だけが変更できます。</p>'}</div></details></article>`}
+const shiftMonth=(month,delta)=>{const [y,m]=month.split('-').map(Number);const d=new Date(y,m-1+delta,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
+function currentPastMonth(){return pastYear&&pastMonth?pastYear+'-'+pastMonth:today().slice(0,7)}
+async function loadPastMonth(){
+  if(!profile||!me)return;
+  const month=currentPastMonth();
+  if(pastLoadedMonth===month)return;
+  const token=++pastRequest;
+  pastLoading=true;pastEvents=[];setLoading('history',true,'過去の活動を読み込み中…');renderPast();
+  const end=shiftMonth(month,1);
+  const upper=end<today()?end:today();
+  try{
+    const snapshot=await getDocs(query(collection(db,'events'),where('date','>=',month+'-01'),where('date','<',upper)));
+    if(token!==pastRequest||!me)return;
+    const loaded=snapshot.docs.map(d=>({id:d.id,...d.data(),answers:{}}));
+    if(profile.role!=='parent')await Promise.all(loaded.map(async e=>{
+      const answers=await getDocs(collection(db,'events',e.id,'answers'));
+      e.answers=Object.fromEntries(answers.docs.map(a=>[a.id,a.data().value]));
+    }));
+    if(token!==pastRequest||!me)return;
+    pastEvents=loaded.sort((a,b)=>b.date.localeCompare(a.date)||String(b.start||'').localeCompare(String(a.start||'')));
+    pastLoadedMonth=month;
+  }catch(error){
+    if(token!==pastRequest)return;
+    pastEvents=[];pastLoadedMonth='';fail(error);
+  }finally{
+    if(token===pastRequest){pastLoading=false;setLoading('history',false);renderPast()}
+  }
+}
+function choosePastMonth(month){
+  if(month>today().slice(0,7)||month<'2018-01')return;
+  [pastYear,pastMonth]=month.split('-');
+  pastKind='all';pastLoadedMonth='';pastRequest++;
+  loadPastMonth();
+}
+function renderPast(){
+  const root=$('past');
+  const current=currentPastMonth(),[year,month]=current.split('-');
+  const chosen=pastEvents;
+  const kinds=[...new Set(chosen.map(e=>e.kind||'通常活動'))].sort((a,b)=>a.localeCompare(b,'ja'));
+  if(pastKind!=='all'&&!kinds.includes(pastKind))pastKind='all';
+  const visible=pastKind==='all'?chosen:chosen.filter(e=>(e.kind||'通常活動')===pastKind);
+  const years=Array.from({length:Math.max(1,Number(today().slice(0,4))-2018+1)},(_,i)=>String(Number(today().slice(0,4))-i));
+  const months=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')).filter(m=>year<today().slice(0,4)||m<=today().slice(5,7));
+  root.innerHTML=`<div class="card past-toolbar">
+    <div class="past-heading"><h3>📚 過去の活動</h3><span class="past-count">${pastLoading?'読み込み中':chosen.length+'件の活動'}</span></div>
+    <div class="past-month-nav"><button type="button" id="pastPrev" aria-label="前の月" ${current<='2018-01'?'disabled':''}>‹</button><strong>${year}年${Number(month)}月</strong><button type="button" id="pastNext" aria-label="次の月" ${current>=today().slice(0,7)?'disabled':''}>›</button></div>
+    <details class="past-more-options ${profile.role==='parent'?'hidden':''}" id="pastMoreOptions" ${pastOptionsOpen?'open':''}><summary>絞り込み・CSV出力などの詳細設定</summary>
+    <p class="small muted past-result-count">表示：${visible.length}件 / この月：${chosen.length}件</p>
+    <div class="past-filters"><label>年<select id="pastYear">${years.map(y=>`<option value="${y}" ${y===year?'selected':''}>${y}年</option>`).join('')}</select></label><label>月<select id="pastMonth">${months.map(m=>`<option value="${m}" ${m===month?'selected':''}>${Number(m)}月</option>`).join('')}</select></label><label>活動種類<select id="pastKind"><option value="all">すべての種類</option>${kinds.map(k=>`<option value="${esc(k)}" ${k===pastKind?'selected':''}>${activityEmoji(k)} ${esc(k)}</option>`).join('')}</select></label></div>
+    <button type="button" class="past-export" id="downloadPastCsv" ${pastLoading?'disabled':''}>⬇ この月のCSVをダウンロード</button>
+    </details>
+  </div>${pastLoading?'<div class="card">活動履歴を読み込み中です…</div>':visible.length?visible.map(card).join(''):'<div class="card">この月の活動はありません。</div>'}`;
+  if(profile.role!=='parent')$('pastMoreOptions').addEventListener('toggle',ev=>{pastOptionsOpen=ev.target.open});
+  $('pastPrev').onclick=()=>choosePastMonth(shiftMonth(current,-1));
+  $('pastNext').onclick=()=>choosePastMonth(shiftMonth(current,1));
+  $('pastYear').onchange=ev=>choosePastMonth(ev.target.value+'-'+(ev.target.value===today().slice(0,4)&&month>today().slice(5,7)?today().slice(5,7):month));
+  $('pastMonth').onchange=ev=>choosePastMonth(year+'-'+ev.target.value);
+  $('pastKind').onchange=ev=>{pastKind=ev.target.value;renderPast()};
+  if(profile.role!=='parent')$('downloadPastCsv').onclick=()=>downloadPastCsv(chosen);
+}
+function downloadPastCsv(chosen){
+  if(profile?.role==='parent')return;if(!chosen.length){alert('ダウンロードする活動がありません');return}
+  const ordered=[...chosen].sort((a,b)=>a.date.localeCompare(b.date)||String(a.start||'').localeCompare(String(b.start||'')));
+  const roster=members.filter(m=>m.role!=='parent'),seen=new Set(roster.map(m=>m.id));
+  for(const e of chosen)for(const m of pastRoster(e)){if(!seen.has(m.id)){roster.push(m);seen.add(m.id)}}
+  const headers=['日付','曜日','活動内容','活動場所','終日','開始時間','終了時間',...roster.map(m=>m.name)];
+  const rows=ordered.map(e=>{
+    const d=new Date(e.date+'T12:00:00');
+    return [e.date,'日月火水木金土'[d.getDay()],e.kind||'通常活動',e.place||'',e.allDay?'はい':'いいえ',e.allDay?'':e.start||'',e.allDay?'':e.end||'',...roster.map(m=>e.answers?.[m.id]||'未回答')];
+  });
+  const cell=v=>{
+    let str=String(v??'');
+    if(/^[\s\uFEFF]*[=+@\-\t\r]/.test(str))str="'"+str;
+    return '"'+str.replace(/"/g,'""')+'"';
+  };
+  const csv='\uFEFF'+[headers,...rows].map(row=>row.map(cell).join(',')).join('\r\n');
+  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  const a=document.createElement('a');a.href=url;a.download=`キッズ活動出欠_${pastYear}年${pastMonth}月.csv`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+// Parent schedules remain visible until 23:59:59 Japan time on the activity date.
+const publicScheduleData=e=>({date:e.date,dateAt:Timestamp.fromDate(new Date(e.date+'T23:59:59+09:00')),start:e.start||'',end:e.end||'',place:e.place||'',kind:e.kind||'通常活動',allDay:!!e.allDay,instructorIds:[]});
+function scheduleData(e,ids=[]){const data=publicScheduleData(e);data.instructorIds=ids;return data}
+const parentScheduleRef=id=>doc(db,'parentSchedules',id);
+const publicInstructorRef=(id,uid)=>doc(db,'parentSchedules',id,'instructors',uid);
+function publicInstructorData(m){return {name:m.name||'名前未設定',photoURL:/^https:\/\/[a-z0-9.-]+\.googleusercontent\.com\//i.test(m.photoURL||'')?m.photoURL:''}}
+async function publishOwnAttendance(eventId,value){
+  // Atomic writes avoid the transaction's server-side pre-read. Firestore rules
+  // still verify ownership, event existence and the public projection.
+  const batch=writeBatch(db);
+  batch.set(doc(db,'events',eventId,'answers',me.uid),{value,updatedAt:serverTimestamp()});
+  batch.update(parentScheduleRef(eventId),{instructorIds:value==='○'?arrayUnion(me.uid):arrayRemove(me.uid)});
+  if(value==='○')batch.set(publicInstructorRef(eventId,me.uid),publicInstructorData(profile));
+  else batch.delete(publicInstructorRef(eventId,me.uid));
+  try{
+    await batch.commit();
+  }catch(error){
+    throw error;
+  }
+}
+async function updateEventWithSchedule(id,changes){
+  await runTransaction(db,async tx=>{
+    const ref=doc(db,'events',id),pub=parentScheduleRef(id);
+    const event=await tx.get(ref),schedule=await tx.get(pub);
+    if(!event.exists())throw new Error('予定が見つかりません');
+    const next={...event.data(),...changes};
+    tx.update(ref,changes);
+    tx.set(pub,scheduleData(next,schedule.exists()?schedule.data().instructorIds||[]:[]));
+  });
+}
+async function syncPublicSchedule(e){
+  if(profile?.role!=='admin')return;
+  await runTransaction(db,async tx=>{const event=await tx.get(doc(db,'events',e.id)),ref=parentScheduleRef(e.id),snap=await tx.get(ref);
+    if(!event.exists())return;
+    const data=scheduleData(event.data(),snap.exists()?snap.data().instructorIds||[]:[]);
+    if(!snap.exists()||['date','start','end','place','kind','allDay'].some(k=>snap.data()[k]!==data[k])||snap.data().dateAt?.toMillis()!==data.dateAt.toMillis()||!Array.isArray(snap.data().instructorIds))tx.set(ref,data);
+  });
+}
+async function syncPublicInstructor(e,m){
+  if(profile?.role!=='admin')return;
+  const ref=publicInstructorRef(e.id,m.id);const [snap,schedule]=await Promise.all([getDoc(ref),getDoc(parentScheduleRef(e.id))]);if(!schedule.exists())return;const ids=schedule.data().instructorIds||[];
+  const expected=e.answers?.[m.id]==='○'&&['admin','member'].includes(m.role)?publicInstructorData(m):null;
+  const batch=writeBatch(db);
+  if(expected){if(!snap.exists()||snap.data().name!==expected.name||snap.data().photoURL!==expected.photoURL)batch.set(ref,expected);
+    if(!ids.includes(m.id))batch.update(parentScheduleRef(e.id),{instructorIds:arrayUnion(m.id)});
+  }else{if(snap.exists())batch.delete(ref);if(ids.includes(m.id))batch.update(parentScheduleRef(e.id),{instructorIds:arrayRemove(m.id)});}
+  await batch.commit();
+}
+async function watchParentSchedules(){
+  // Parents load a fresh snapshot on page entry/reload; no persistent listeners
+  // or per-second refreshes are needed for their read-only schedule.
+  const cutoff=Timestamp.fromMillis(Math.ceil((Date.now()+1000)/60000)*60000);
+  try{
+    const snapshot=await getDocs(query(collection(db,'parentSchedules'),where('dateAt','>=',cutoff)));
+    if(profile?.role!=='parent')return;
+    const loaded=snapshot.docs.map(d=>({id:d.id,...d.data(),instructors:[]}));
+    const results=await Promise.all(loaded.flatMap(event=>
+      [...new Set(event.instructorIds||[])].map(async uid=>{
+        try{
+          const person=await getDoc(publicInstructorRef(event.id,uid));
+          return {eventId:event.id,uid,person:person.exists()?person.data():null};
+        }catch(error){
+          // A member can withdraw between the schedule query and detail fetch.
+          if(error.code==='permission-denied'||error.code==='not-found')return {eventId:event.id,uid,person:null};
+          throw error;
+        }
+      })
+    ));
+    if(profile?.role!=='parent')return;
+    for(const item of results){
+      const event=loaded.find(e=>e.id===item.eventId);
+      if(event&&item.person)event.instructors.push({id:item.uid,...item.person});
+    }
+    events=loaded;
+    render();
+  }catch(error){if(profile?.role==='parent')fail(error)}
+  finally{if(profile?.role==='parent')setLoading('startup',false)}
+}
+async function loadAccessRole(){
+  const ref=doc(db,'accessStatus',me.uid);
+  try{const snap=await getDoc(ref);if(snap.exists())return snap.data().role}catch(e){if(e.code!=='permission-denied')throw e}
+  // Rules permit only the role already recorded by the administrator in members.
+  // The role-only document provides no route to self-approval or promotion.
+  for(const role of ['parent','member','admin'])try{await setDoc(ref,{role});return role}catch(e){if(e.code!=='permission-denied')throw e}
+  return null;
+}
+
+function renderFuture(future){
+  const root=$('future');
+  const months=[...new Set(future.map(e=>e.date.slice(0,7)))].sort();
+  if(!months.length){root.innerHTML='<div class="card"><h3>📅 今後の活動</h3><p>今後の活動はありません。</p></div>';return}
+  if(!months.includes(futureMonth)){
+    const current=today().slice(0,7);
+    futureMonth=months.includes(current)?current:months[0];
+  }
+  const idx=months.indexOf(futureMonth);
+  const selected=future.filter(e=>e.date.startsWith(futureMonth+'-'));
+  const [year,month]=futureMonth.split('-');
+  root.innerHTML=`<div class="card past-toolbar">
+    <div class="past-heading"><h3>📅 今後の活動</h3><span class="past-count">${selected.length}件の活動</span></div>
+    <div class="past-month-nav">
+      <button type="button" id="futurePrev" aria-label="前の活動月" ${idx===0?'disabled':''}>‹</button>
+      <strong>${year}年${Number(month)}月</strong>
+      <button type="button" id="futureNext" aria-label="次の活動月" ${idx===months.length-1?'disabled':''}>›</button>
+    </div>
+  </div>${selected.map(card).join('')}`;
+  $('futurePrev').onclick=()=>{if(idx>0){futureMonth=months[idx-1];renderFuture(future)}};
+  $('futureNext').onclick=()=>{if(idx<months.length-1){futureMonth=months[idx+1];renderFuture(future)}};
+}
+function renderUnanswered(future){
+  const el=$('unansweredAlert');
+  const unanswered=future.filter(e=>!['○','△','×'].includes(e.answers?.[me.uid]));
+  if(!unanswered.length){el.classList.add('hidden');el.open=false;$('unansweredList').replaceChildren();return}
+  el.classList.remove('hidden');
+  $('unansweredSummary').textContent=`未回答の活動があります（${unanswered.length}件）`;
+  $('unansweredList').innerHTML='<div class="small" style="padding:6px 3px;color:#a32323">タップすると該当する活動へ移動します。</div>'+unanswered.map(e=>`<button type="button" class="unanswered-item" data-open-event="${esc(e.id)}"><strong class="${dateColorClass(e.date)}">${dateLabel(e.date)}</strong>　${e.allDay?'終日':esc(e.start||'')}　${esc(e.kind||'通常活動')}・${esc(e.place||'')}</button>`).join('');
+}
+async function loadDeleteHistory(){
+  if(deleteHistoryLoading||deleteHistoryLoaded||profile?.role!=='admin')return;
+  deleteHistoryLoading=true;
+  const root=$('deleteManager');if(root)root.innerHTML='<div class="card">過去の削除対象を読み込み中です…</div>';
+  try{
+    const snapshot=await getDocs(query(collection(db,'events'),where('date','<',today())));
+    if(!me||profile?.role!=='admin')return;
+    deleteHistory=snapshot.docs.map(d=>({id:d.id,...d.data(),answers:{}}));
+    deleteHistoryLoaded=true;
+  }catch(error){fail(error)}
+  finally{deleteHistoryLoading=false;if(tab==='deleteManager')renderDeleteManager()}
+}
+function renderDeleteManager(){
+  const root=$('deleteManager');if(!root)return;
+  const all=(deletePeriod==='future'?events:deletePeriod==='past'?deleteHistory:[...events,...deleteHistory]).sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start));
+  const months=[...new Set(all.map(e=>e.date.slice(0,7)))].sort().reverse();
+  const kinds=[...new Set(all.map(e=>e.kind||'通常活動'))].sort((a,b)=>a.localeCompare(b,'ja'));
+  const places=[...new Set(all.map(e=>e.place||'未設定'))].sort((a,b)=>a.localeCompare(b,'ja'));
+  if(deleteMonth!=='all'&&!months.includes(deleteMonth))deleteMonth='all';
+  if(deleteKind!=='all'&&!kinds.includes(deleteKind))deleteKind='all';
+  if(deletePlace!=='all'&&!places.includes(deletePlace))deletePlace='all';
+  const shown=all.filter(e=>(deleteMonth==='all'||e.date.startsWith(deleteMonth))&&(deleteKind==='all'||(e.kind||'通常活動')===deleteKind)&&(deletePlace==='all'||(e.place||'未設定')===deletePlace));
+  const existing=new Set([...events,...deleteHistory].map(e=>e.id));for(const id of deleteSelection)if(!existing.has(id))deleteSelection.delete(id);
+  const chosen=[...events,...deleteHistory].filter(e=>deleteSelection.has(e.id)).sort((a,b)=>a.date.localeCompare(b.date));
+  const opts=(items,current,label)=>'<option value="all">'+label+'</option>'+items.map(v=>'<option value="'+esc(v)+'" '+(current===v?'selected':'')+'>'+esc(v)+'</option>').join('');
+  root.innerHTML=`<div class="card"><h3>🗑️ 予定の一括削除</h3><p class="muted">管理者専用です。今後・過去の予定を選び、まとめて削除できます。削除すると全員の出欠回答も消え、元に戻せません。</p>
+    <div class="delete-toolbar">
+      <label>対象<select id="deletePeriod"><option value="future" ${deletePeriod==='future'?'selected':''}>今後の活動</option><option value="past" ${deletePeriod==='past'?'selected':''}>過去の活動</option><option value="all" ${deletePeriod==='all'?'selected':''}>すべての活動</option></select></label>
+      <label>年月<select id="deleteMonth">${opts(months,deleteMonth,'すべての年月')}</select></label>
+      <label>活動種類<select id="deleteKind">${opts(kinds,deleteKind,'すべての種類')}</select></label>
+      <label>場所<select id="deletePlace">${opts(places,deletePlace,'すべての場所')}</select></label>
+    </div>
+    <div class="delete-actions"><label><input type="checkbox" id="deleteSelectAll" ${shown.length>0&&shown.every(e=>deleteSelection.has(e.id))?'checked':''} ${shown.length?'':'disabled'}> 表示中の${shown.length}件をすべて選択</label><span class="delete-summary">選択中：${chosen.length}件</span></div>
+    <div class="delete-list">${shown.length?shown.map(e=>`<label class="delete-entry"><input type="checkbox" class="delete-item" value="${esc(e.id)}" ${deleteSelection.has(e.id)?'checked':''}><span class="delete-entry-content"><strong class="${dateColorClass(e.date)}">${dateLabel(e.date)}　${activityEmoji(e.kind)} ${esc(e.kind||'通常活動')}</strong><small>🕒 ${e.allDay?'終日':esc(e.start||'')+'〜'+esc(e.end||'')}　📍 ${esc(e.place||'未設定')}</small></span></label>`).join(''):'<p class="delete-empty">この条件に該当する予定はありません。</p>'}</div>
+    <div class="delete-actions"><button type="button" id="deleteClear" ${!chosen.length||deleteBusy?'disabled':''}>選択を解除</button><button type="button" class="delete-danger" id="deleteReview" ${!chosen.length||deleteBusy?'disabled':''}>選択した${chosen.length}件を削除…</button></div>
+    ${deleteConfirm&&chosen.length?`<div class="delete-confirm" role="group" aria-label="一括削除の最終確認"><strong>⚠️ 本当に${chosen.length}件の予定を削除しますか？</strong><p>予定と、それぞれに登録された全員の出欠回答が完全に削除されます。この操作は取り消せません。</p><p class="small">対象：${chosen.slice(0,8).map(e=>dateLabel(e.date)+' '+esc(e.kind||'通常活動')).join('、')}${chosen.length>8?' ほか'+(chosen.length-8)+'件':''}</p><div class="row"><button type="button" id="deleteCancel" ${deleteBusy?'disabled':''}>キャンセル</button><button type="button" class="delete-danger" id="deleteExecute" ${deleteBusy?'disabled':''}>${deleteBusy?'削除中…':'削除を確定する（'+chosen.length+'件）'}</button></div></div>`:''}
+  </div>`;
+  for(const [id,key] of [['deletePeriod','period'],['deleteMonth','month'],['deleteKind','kind'],['deletePlace','place']]){
+    $(id).onchange=ev=>{if(deleteBusy)return;const v=ev.target.value;if(key==='period'){deletePeriod=v;deleteMonth='all';deleteKind='all';deletePlace='all'}else if(key==='month')deleteMonth=v;else if(key==='kind')deleteKind=v;else deletePlace=v;deleteConfirm=false;renderDeleteManager();if(key==='period'&&v!=='future'&&!deleteHistoryLoaded)loadDeleteHistory()};
+  }
+  $('deleteSelectAll').onchange=ev=>{if(deleteBusy)return;for(const e of shown)ev.target.checked?deleteSelection.add(e.id):deleteSelection.delete(e.id);deleteConfirm=false;renderDeleteManager()};
+  root.querySelectorAll('.delete-item').forEach(input=>input.onchange=()=>{if(deleteBusy)return;input.checked?deleteSelection.add(input.value):deleteSelection.delete(input.value);deleteConfirm=false;renderDeleteManager()});
+  $('deleteClear').onclick=()=>{deleteSelection.clear();deleteConfirm=false;renderDeleteManager()};
+  $('deleteReview').onclick=()=>{deleteConfirm=true;renderDeleteManager();$('deleteExecute')?.scrollIntoView({block:'nearest',behavior:'smooth'})};
+  if($('deleteCancel'))$('deleteCancel').onclick=()=>{deleteConfirm=false;renderDeleteManager()};
+  if($('deleteExecute'))$('deleteExecute').onclick=executeBulkDelete;
+}
+async function executeBulkDelete(){
+  if(profile?.role!=='admin'||!deleteConfirm||deleteBusy)return;
+  const targets=[...events,...deleteHistory].filter(e=>deleteSelection.has(e.id));if(!targets.length)return;
+  if(!confirm(targets.length+'件の予定と全員の出欠回答を完全に削除します。\\n元に戻せません。実行しますか？'))return;
+  deleteBusy=true;setLoading('bulkDelete',true,'予定と出欠回答を削除処理中です…');renderDeleteManager();
+  let done=0;const errors=[];
+  // Optimize only deletion. Keep the proven login and Firestore listeners unchanged.
+  // Five events per batch reduces round trips while keeping writes well below Firestore limits.
+  const groups=[];for(let i=0;i<targets.length;i+=5)groups.push(targets.slice(i,i+5));
+  let nextGroup=0;
+  async function deleteWorker(){
+    while(nextGroup<groups.length){
+      const group=groups[nextGroup++];
+      try{
+        // Fetch the five answer subcollections at the same time.
+        const answers=await Promise.all(group.map(e=>getDocs(collection(db,'events',e.id,'answers'))));
+        const publicPeople=await Promise.all(group.map(e=>getDocs(collection(db,'parentSchedules',e.id,'instructors'))));
+        const writeCount=group.length*2+answers.reduce((sum,snapshot)=>sum+snapshot.size,0)+publicPeople.reduce((sum,snapshot)=>sum+snapshot.size,0);
+        if(writeCount>400)throw new Error('回答データが多すぎます。対象を減らして再実行してください。');
+        const batch=writeBatch(db);
+        group.forEach((e,i)=>{
+          answers[i].docs.forEach(answer=>batch.delete(answer.ref));
+          publicPeople[i].docs.forEach(person=>batch.delete(person.ref));
+          batch.delete(parentScheduleRef(e.id));
+          batch.delete(doc(db,'events',e.id));
+        });
+        // Event documents and their answers are removed atomically per group.
+        await batch.commit();
+        group.forEach(e=>{deleteSelection.delete(e.id);bulkDrafts.delete(e.id)});deleteHistory=deleteHistory.filter(e=>!group.some(g=>g.id===e.id));pastEvents=pastEvents.filter(e=>!group.some(g=>g.id===e.id));
+        done+=group.length;
+      }catch(error){
+        console.error('予定の一括削除に失敗:',error);
+        errors.push(error);
+      }
+    }
+  }
+  try{
+    // Limit concurrency to avoid flooding Firestore and the UI.
+    await Promise.all(Array.from({length:Math.min(4,groups.length)},()=>deleteWorker()));
+    deleteConfirm=false;
+    if(errors.length)notify(done+'件を削除しました。残り'+(targets.length-done)+'件は削除できませんでした：'+(errors[0]?.message||String(errors[0])),true);
+    else notify(done+'件の予定と出欠回答を削除しました');
+  }finally{deleteBusy=false;setLoading('bulkDelete',false);render();}
+}
+function render(){if(!profile||!me)return;const parent=profile.role==='parent';if(parent&&tab!=='future')tab='future';let ts=today(),sorted=[...events].sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start));let future=sorted.filter(e=>profile.role==='parent'?e.dateAt?.toMillis()>Date.now():e.date>=ts),past=sorted.filter(e=>e.date<ts).reverse();for(let t of ['future','bulk','create','past','members','deleteManager']){$(t).classList.toggle('hidden',t!==tab||(parent&&t!=='future'));document.querySelector(`[data-tab="${t}"]`)?.classList.toggle('active',t===tab);document.querySelector(`[data-tab="${t}"]`)?.setAttribute('aria-current',t===tab?'page':'false')}document.querySelectorAll('.tabs [data-tab]').forEach(el=>el.classList.toggle('hidden',parent&&el.dataset.tab!=='future'));document.querySelector('.tabs').classList.toggle('hidden',parent);$('membersTab').classList.toggle('hidden',profile.role!=='admin');$('deleteManagerTab').classList.toggle('hidden',profile.role!=='admin');document.querySelector('.tabs')?.classList.toggle('member-only-tabs',profile.role!=='admin');if(profile.role!=='admin'&&(tab==='members'||tab==='deleteManager')){tab='future';return render()}renderFuture(future);if(parent){$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('myname').classList.add('hidden');$('parentLogout').classList.remove('hidden');return}$('parentLogout').classList.add('hidden');$('myname').classList.remove('hidden');renderUnanswered(future);if(tab==='past')renderPast();if(profile.role==='admin'&&tab==='deleteManager')renderDeleteManager();$('bulk').innerHTML=`<div class="card"><h3>${esc(profile.name)}の出欠をまとめて回答</h3><p class="muted">○・△・×をタップして選択し、最後に「まとめて保存」を押してください。</p>${future.map(e=>`<div class="bulk-entry"><div class="bulk-info"><strong class="${dateColorClass(e.date)}">${dateLabel(e.date)}</strong><span class="small">${e.allDay?"終日":esc(e.start)} ${esc(e.kind||"通常活動")}・${esc(e.place)}</span></div><div class="bulk-options" role="radiogroup" aria-label="${esc(e.date)}の出欠">${['○','△','×'].map(v=>`<label class="bulk-choice"><input type="radio" class="bulk-answer" name="bulk-${esc(e.id)}" data-id="${esc(e.id)}" value="${v}" ${v===(bulkDrafts.has(e.id)?bulkDrafts.get(e.id):e.answers?.[me.uid])?'checked':''}><span>${v}</span></label>`).join('')}</div></div>`).join('')}<div class="row"><button class="primary" id="savebulk">まとめて保存</button></div></div>`;$('savebulk').onclick=async()=>{if(profile?.role==='parent')return;const entries=[...document.querySelectorAll('.bulk-answer:checked')];const btn=$('savebulk');btn.disabled=true;try{
+  const pending=entries.filter(el=>events.find(e=>e.id===el.dataset.id)?.answers?.[me.uid]!==el.value);
+  if(!pending.length){notify('変更が必要な出欠回答はありません');return}
+  let saved=0;
+  for(const el of pending){
+    try{await publishOwnAttendance(el.dataset.id,el.value);saved++}
+    catch(error){console.error('出欠の保存に失敗:',el.dataset.id,error);notify(saved+'件保存しましたが、残り'+(pending.length-saved)+'件を保存できませんでした'+(error?.code?' ['+error.code+']':'')+'：'+(error?.message||String(error)),true);return}
+  }
+  bulkDrafts.clear();notify(saved+'件の出欠を保存しました');render();window.scrollTo({top:0,behavior:'smooth'})
+}catch(e){fail(e)}finally{btn.disabled=false}};
+$('memberCount').textContent=members.length+' / 10人';
+$('memberlist').innerHTML=members.map(m=>`<article class="member-card">
+  <div class="member-card-top">${memberAvatar(m)}<div class="member-card-name"><strong>${esc(m.name||'名前未設定')}</strong><span>${m.role==='admin'?'👑 管理者':m.role==='parent'?'👪 保護者':'👤 メンバー'}</span></div><span class="member-approved">✓ 承認済み</span></div>
+  <details class="member-details"><summary>ユーザーID・管理操作</summary><div class="member-uid">${esc(m.id)}</div>${m.role!=='admin'?`<div class="member-role-control"><label for="role-${esc(m.id)}">権限</label><select id="role-${esc(m.id)}" data-member-role="${esc(m.id)}"><option value="member" ${m.role!=='parent'?'selected':''}>👤 メンバー</option><option value="parent" ${m.role==='parent'?'selected':''}>👪 保護者（閲覧のみ）</option></select></div>`:''}${m.role!=='admin'?`<button type="button" data-remove="${esc(m.id)}" class="danger">このメンバーの承認を取り消す</button>`:'<p class="small muted">管理者の承認はこの画面から取り消せません。</p>'}</details>
+</article>`).join('')}
+async function watch(){clean();const accessRole=await loadAccessRole();if(!accessRole){showPending();setLoading('startup',false);return}
+if(accessRole==='parent'){const own=await getDoc(doc(db,'members',me.uid));const savedName=own.exists()&&typeof own.data().name==='string'?own.data().name.trim():'';profile={id:me.uid,role:'parent',name:savedName||'保護者'}}
+else {const snap=await getDoc(doc(db,'members',me.uid));if(!snap.exists()){showPending();setLoading('startup',false);return}profile={id:me.uid,...snap.data()}}
+$('mynameinput').value=profile.name||'';$('mynamehint').textContent='名前はいつでも変更できます。';$('pending').classList.add('hidden');$('app').classList.remove('hidden');$('authstate').textContent='ログイン中：'+profile.name;
+unsubs.push(onSnapshot(doc(db,'accessStatus',me.uid),snap=>{
+  if(!snap.exists()||profile?.role!==snap.data().role){watch().catch(fail)}
+},error=>{if(error.code==='permission-denied')watch().catch(fail);else fail(error)}));
+if(profile.role==='parent'){watchParentSchedules().catch(fail);return}
+unsubs.push(onSnapshot(collection(db,'members'),snapshot=>{
+  members=snapshot.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order??99)-(b.order??99));
+  const own=members.find(m=>m.id===me.uid);
+  if(own&&own.role!==profile?.role){window.location.reload();return}
+  if(own){profile={...own};$('authstate').textContent='ログイン中：'+own.name}
+  if(profile?.role==='admin')console.info('公開予定の同期は管理者の明示的な変更時に行います');
+  render();
+},fail));
+
+unsubs.push(onSnapshot(query(collection(db,'events'),where('date','>=',today())),snapshot=>{
+  const oldEvents=new Map(events.map(e=>[e.id,e]));
+  const liveIds=new Set(snapshot.docs.map(d=>d.id));
+  for(const [id,stop] of answerUnsubs)if(!liveIds.has(id)){stop();answerUnsubs.delete(id)}
+  events=snapshot.docs.map(d=>({id:d.id,...d.data(),answers:oldEvents.get(d.id)?.answers||{}}));
+  for(const event of events){
+    if(answerUnsubs.has(event.id))continue;
+    const id=event.id;
+    const stop=onSnapshot(collection(db,'events',id,'answers'),answers=>{
+      const current=events.find(e=>e.id===id);
+      if(current){current.answers=Object.fromEntries(answers.docs.map(a=>[a.id,a.data().value]));if(!deleteBusy)render()}
+    },fail);
+    answerUnsubs.set(id,stop);
+  }
+  
+  if(!deleteBusy)render();setLoading('startup',false);
+},e=>{setLoading('startup',false);fail(e)}));}
+
+function showPending(){$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('app').classList.add('hidden');$('pending').classList.remove('hidden');$('uid').textContent=me.uid;$('authstate').textContent='承認待ち';$('mynamehint').textContent=myPendingName?'登録名：'+myPendingName+'（承認を待っています）':'先に表示名を登録してください。';}
+$('login').onclick=async()=>{try{await signInWithPopup(auth,provider)}catch(e){if(e.code==='auth/popup-blocked'){await signInWithRedirect(auth,provider)}else{alert('ログインに失敗しました：'+e.message)}}};$('logout').onclick=()=>signOut(auth);$('parentLogoutButton').onclick=()=>signOut(auth);$('copyuid').onclick=()=>navigator.clipboard.writeText(me.uid).then(()=>alert('コピーしました')).catch(()=>alert('コピーできない場合は表示されたIDを選択してください'));
+onAuthStateChanged(auth,async user=>{clean();me=user;$('login').classList.toggle('hidden',!!user);$('logout').classList.toggle('hidden',!user);const avatar=$('authavatar');const url=user?.photoURL||'';const safe=/^https:\/\/(?:lh[0-9]+\.googleusercontent\.com|[a-z0-9.-]+\.googleusercontent\.com)\//i.test(url);avatar.classList.toggle('hidden',!safe);avatar.onerror=()=>avatar.classList.add('hidden');if(safe)avatar.src=url;else avatar.removeAttribute('src');if(!user){$('parentLogout').classList.add('hidden');setLoading('startup',false);$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('myname').classList.add('hidden');$('authstate').textContent='ログインしてください';$('app').classList.add('hidden');$('pending').classList.add('hidden');return}try{$('myname').classList.remove('hidden');const nameSnap=await getDoc(doc(db,'userProfiles',user.uid)).catch(e=>{if(e.code==='permission-denied')return {exists:()=>false};throw e});myPendingName=nameSnap.exists()?nameSnap.data().name||'':'';$('mynameinput').value=myPendingName;await watch();if(user.photoURL&&profile&&profile.role!=='parent'&&profile.photoURL!==user.photoURL){try{await updateDoc(doc(db,'members',user.uid),{photoURL:user.photoURL})}catch(err){console.warn('プロフィール画像の保存にはFirestoreルールの更新が必要です',err)}}}catch(e){setLoading('startup',false);showPending();console.error(e);$('mynamehint').textContent='プロフィールを読み込めません。Firestoreルールを確認してください。'}});getRedirectResult(auth).catch(console.error);
+$('refreshLogo').addEventListener('click',()=>window.location.reload());
+document.addEventListener('click',async ev=>{let b=ev.target.closest('button');if(!b||!profile)return;if(b.dataset.openEvent){
+  const selectedEvent=events.find(e=>e.id===b.dataset.openEvent);
+  if(!selectedEvent||selectedEvent.date<today())return;
+  futureMonth=selectedEvent.date.slice(0,7);
+  tab='future';render();
+  const target=[...document.querySelectorAll('#future [data-event-id]')].find(el=>el.dataset.eventId===b.dataset.openEvent);if(target){const details=target.querySelector('details');if(details)details.open=true;target.scrollIntoView({behavior:'smooth',block:'start'})}return}if(b.dataset.tab){if(profile.role==='parent'&&b.dataset.tab!=='future')return;if((b.dataset.tab==='members'||b.dataset.tab==='deleteManager')&&profile.role!=='admin')return;tab=b.dataset.tab;render();if(tab==='past'&&pastLoadedMonth!==currentPastMonth())loadPastMonth();if(tab==='deleteManager'&&deletePeriod!=='future'&&!deleteHistoryLoaded)loadDeleteHistory();return}if(b.dataset.deleteEvent&&profile.role==='admin'){const id=b.dataset.deleteEvent;const event=[...events,...pastEvents,...deleteHistory].find(e=>e.id===id);if(!event)return;const title=`${event.date} ${event.kind||'通常活動'}（${event.place}）`;if(!confirm(`${title} を削除しますか？\nこの予定と全員の出欠回答が削除され、元に戻せません。`))return;b.disabled=true;try{const answers=await getDocs(collection(db,'events',id,'answers'));const publicPeople=await getDocs(collection(db,'parentSchedules',id,'instructors'));const batch=writeBatch(db);answers.docs.forEach(d=>batch.delete(d.ref));publicPeople.docs.forEach(d=>batch.delete(d.ref));batch.delete(parentScheduleRef(id));batch.delete(doc(db,'events',id));await batch.commit();bulkDrafts.delete(id);pastEvents=pastEvents.filter(e=>e.id!==id);deleteHistory=deleteHistory.filter(e=>e.id!==id);if(tab==='past')renderPast();notify('予定を削除しました')}catch(e){fail(e);b.disabled=false}return}if(b.dataset.answer&&profile.role!=='parent'){try{await publishOwnAttendance(b.dataset.answer,b.dataset.value)}catch(e){fail(e)}}if(b.dataset.remove&&profile.role==='admin'){
+  const departing=members.find(m=>m.id===b.dataset.remove);
+  if(!departing)return;
+  if(!confirm(`${departing.name}さんの承認を取り消しますか？\n過去の活動には名前・出欠を残し、今後の活動からは表示を外します。`))return;
+  b.disabled=true;
+  try{
+    // Keep the person's identity on every historical event before revoking access.
+    // Answer documents remain untouched.
+    const historySnap=await getDocs(query(collection(db,'events'),where('date','<',today())));const history=historySnap.docs.map(d=>({id:d.id,...d.data()}));
+    const snapshot={id:departing.id,name:departing.name,...(departing.photoURL?{photoURL:departing.photoURL}:{})};
+    for(let i=0;i<history.length;i+=400){
+      const batch=writeBatch(db);
+      for(const e of history.slice(i,i+400)){
+        const former=[...(e.formerMembers||[]).filter(m=>m.id!==departing.id),snapshot];
+        batch.update(doc(db,'events',e.id),{formerMembers:former});
+      }
+      await batch.commit();
+    }
+    const revoke=writeBatch(db);revoke.delete(doc(db,'members',departing.id));revoke.delete(doc(db,'accessStatus',departing.id));await revoke.commit();
+    notify(`${departing.name}さんの承認を解除しました。過去の活動記録は保存されています。`);
+  }catch(e){fail(e)}finally{b.disabled=false}
+}});
+document.addEventListener('change',async ev=>{let el=ev.target;if(el.classList.contains('bulk-answer')){bulkDrafts.set(el.dataset.id,el.value);return}if(!profile||profile.role!=='admin')return;
+if(el.dataset.memberRole){const member=members.find(m=>m.id===el.dataset.memberRole);if(!member||member.role==='admin')return;const newRole=el.value;if(!['member','parent'].includes(newRole))return;const oldRole=member.role==='parent'?'parent':'member';if(newRole===oldRole)return;el.disabled=true;try{const roles=writeBatch(db);roles.update(doc(db,'members',member.id),{role:newRole});roles.set(doc(db,'accessStatus',member.id),{role:newRole});await roles.commit();if(newRole==='parent')await Promise.all(events.map(async e=>{const ref=publicInstructorRef(e.id,member.id);if((await getDoc(ref)).exists())await deleteDoc(ref)}));notify(`${member.name}さんの権限を「${newRole==='parent'?'保護者':'メンバー'}」に変更しました`)}catch(e){el.value=oldRole;fail(e)}finally{el.disabled=false}return}
+if(el.dataset.kindChoice){
+  const id=el.dataset.kindChoice;
+  const wrap=[...document.querySelectorAll('[data-custom-kind-wrap]')].find(x=>x.dataset.customKindWrap===id);
+  if(wrap)wrap.classList.toggle('hidden',el.value!=='custom');
+  if(el.value==='custom'){wrap?.querySelector('input')?.focus();return}
+  try{await updateEventWithSchedule(id,{kind:el.value})}catch(e){fail(e)}
+  return;
+}
+if(el.dataset.placeChoice){
+  const id=el.dataset.placeChoice;
+  const wrap=[...document.querySelectorAll('[data-custom-place-wrap]')].find(x=>x.dataset.customPlaceWrap===id);
+  if(wrap)wrap.classList.toggle('hidden',el.value!=='custom');
+  if(el.value==='custom'){wrap?.querySelector('input')?.focus();return}
+  try{await updateEventWithSchedule(id,{place:el.value})}catch(e){fail(e)}
+  return;
+}
+if(!el.dataset.field)return;
+if(el.dataset.field==='place'&&!el.value.trim()){alert('活動場所を入力してください');return}
+if(el.dataset.field==='kind'&&!el.value.trim()){alert('活動名を入力してください');return}
+try{await updateEventWithSchedule(el.dataset.id,{[el.dataset.field]:el.dataset.field==='allDay'?el.checked:el.value.trim()})}catch(e){fail(e)}});
+
+const selectedDates=new Set();
+document.querySelectorAll('input[name="placePreset"]').forEach(el=>el.addEventListener('change',()=>{
+  $('customPlaceLabel').classList.toggle('hidden',document.querySelector('input[name="placePreset"]:checked')?.value!=='自由入力');
+}));
+function updateTimePreset(){
+  const value=document.querySelector('input[name="timePreset"]:checked')?.value||'09:00-18:00';
+  $('allDay').checked=value==='allDay';
+  $('customTimes').classList.toggle('hidden',value!=='custom');
+  if(value==='custom'){$('start').disabled=false;$('end').disabled=false;return}
+  if(value==='allDay'){$('start').value='00:00';$('end').value='00:00';return}
+  const [start,end]=value.split('-');$('start').value=start;$('end').value=end;
+}
+document.querySelectorAll('input[name="timePreset"]').forEach(el=>el.addEventListener('change',()=>{
+  if(el.checked&&el.value==='custom'){$('start').value='00:00';$('end').value='00:00'}
+  updateTimePreset();
+}));
+updateTimePreset();
+let calendarYear=new Date().getFullYear(),calendarMonth=new Date().getMonth();
+function calendarDateString(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
+function drawCalendar(){
+  $('calendarMonth').textContent=calendarYear+'年'+(calendarMonth+1)+'月';
+  const root=$('calendarDays');root.replaceChildren();
+  const offset=new Date(calendarYear,calendarMonth,1).getDay();
+  const days=new Date(calendarYear,calendarMonth+1,0).getDate();
+  for(let i=0;i<offset;i++){const blank=document.createElement('span');blank.className='calendar-empty';root.append(blank)}
+  const now=today();
+  for(let day=1;day<=days;day++){
+    const date=calendarDateString(calendarYear,calendarMonth,day);
+    const btn=document.createElement('button');btn.type='button';btn.className='calendar-day '+dateColorClass(date);
+    if(date===now)btn.classList.add('calendar-today');
+    if(selectedDates.has(date))btn.classList.add('calendar-selected');
+    btn.textContent=String(day);btn.setAttribute('aria-label',dateLabel(date));btn.setAttribute('aria-pressed',selectedDates.has(date)?'true':'false');
+    btn.onclick=()=>{
+      if(selectedDates.has(date))selectedDates.delete(date);
+      else{if(selectedDates.size>=50){alert('一度に50日までです');return}selectedDates.add(date)}
+      redrawDates();
+    };
+    root.append(btn);
+  }
+}
+$('calendarPrev').onclick=()=>{calendarMonth--;if(calendarMonth<0){calendarMonth=11;calendarYear--}drawCalendar()};
+$('calendarNext').onclick=()=>{calendarMonth++;if(calendarMonth>11){calendarMonth=0;calendarYear++}drawCalendar()};
+function redrawDates(){
+  const root=$('chosenDates');root.replaceChildren();
+  $('selectedDateCount').textContent=selectedDates.size+'日';
+  if(!selectedDates.size){const p=document.createElement('p');p.className='muted';p.textContent='まだ日付が選択されていません。';root.append(p)}
+  for(const d of [...selectedDates].sort()){
+    const row=document.createElement('span');row.className='chosen-date '+dateColorClass(d);
+    row.append(document.createTextNode(dateLabel(d)));
+    const x=document.createElement('button');x.type='button';x.textContent='×';x.setAttribute('aria-label',dateLabel(d)+'を解除');
+    x.onclick=()=>{selectedDates.delete(d);redrawDates()};row.append(x);root.append(row);
+  }
+  drawCalendar();
+}
+redrawDates();
+document.querySelectorAll('input[name="kindPreset"]').forEach(el=>el.addEventListener('change',()=>{$('customLabel').classList.toggle('hidden',document.querySelector('input[name="kindPreset"]:checked')?.value!=='other')}));
+$('add').onclick=async()=>{if(!profile||profile.role==='parent')return;const dates=[...selectedDates];const chosenKind=document.querySelector('input[name="kindPreset"]:checked')?.value||'通常活動';const kind=chosenKind==='other'?$('customKind').value.trim():chosenKind;updateTimePreset();if(!dates.length){alert('カレンダーから日付を選択してください');return}if(!kind){alert('イベント名を入力してください');return}const selectedPlace=document.querySelector('input[name="placePreset"]:checked')?.value||'里山';const place=selectedPlace==='自由入力'?$('customPlace').value.trim():selectedPlace;if(!place){alert('活動場所を入力してください');return}try{await Promise.all(dates.map(async date=>{const event={date,start:$('start').value,end:$('end').value,place,kind,allDay:$('allDay').checked,createdBy:me.uid,createdAt:serverTimestamp()};const ref=doc(collection(db,'events')),batch=writeBatch(db);batch.set(ref,event);batch.set(parentScheduleRef(ref.id),scheduleData(event));await batch.commit()}));selectedDates.clear();redrawDates();notify('予定を登録しました');render();window.scrollTo({top:0,behavior:'smooth'})}catch(e){fail(e)}};
+
+$('savemyname').onclick=async()=>{if(!me||profile?.role==='parent')return;const name=$('mynameinput').value.trim();if(!name||name.length>30){alert('表示名を1〜30文字で入力してください');return}const btn=$('savemyname');btn.disabled=true;try{await setDoc(doc(db,'userProfiles',me.uid),{name,updatedAt:serverTimestamp()});myPendingName=name;if(profile){await updateDoc(doc(db,'members',me.uid),{name});profile.name=name;$('authstate').textContent='ログイン中：'+name;render()}else{$('mynamehint').textContent='登録名：'+name+'（承認を待っています）'}alert('表示名を保存しました')}catch(e){console.error(e);alert('名前を保存できませんでした。Firestoreルールを確認してください。\n'+e.message)}finally{btn.disabled=false}};
+$('addmember').onclick=async()=>{if(profile?.role!=='admin')return;const uid=$('memberuid').value.trim();if(!uid){alert('ユーザーIDを入力してください');return}if(members.some(m=>m.id===uid)){alert('この人はすでに登録済みです');return}if(members.length>=10){alert('メンバーは10人までです');return}try{const nameSnap=await getDoc(doc(db,'userProfiles',uid));const name=nameSnap.exists()?nameSnap.data().name?.trim():'';if(!name){alert('相手の名前が未登録です。本人に名前を保存してもらってください');return}const approval=writeBatch(db);approval.set(doc(db,'members',uid),{name,role:'member',order:members.length});approval.set(doc(db,'accessStatus',uid),{role:'member'});await approval.commit();$('memberuid').value='';notify(name+'さんを承認しました。相手にページを再読み込みしてもらってください')}catch(e){fail(e)}};
+
+</script></body></html>
