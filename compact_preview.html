@@ -763,6 +763,7 @@ $('enableParentPush').onclick=async()=>{
   if(profile?.role!=='parent')return;
   const btn=$('enableParentPush'),result=$('parentPushStatus');
   btn.disabled=true;result.textContent='通知の設定を確認しています…';
+  let stage='端末の対応状況';
   try{
     const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
     if(isIOS&&!window.matchMedia('(display-mode: standalone)').matches&&!window.navigator.standalone){
@@ -775,15 +776,20 @@ $('enableParentPush').onclick=async()=>{
     if(!PUSH_TEST_VAPID_KEY){
       throw new Error('Firebaseの公開VAPIDキーがまだ設定されていません。管理者側の設定が必要です。');
     }
+    stage='通知の許可';result.textContent='① 通知の許可を確認中…';
     const permission=await Notification.requestPermission();
     if(permission!=='granted')throw new Error('通知が許可されていません。端末・ブラウザの設定から通知を許可してください。');
+    stage='Firebase通知の対応状況';result.textContent='② 通知機能を確認中…';
     if(!await isMessagingSupported())throw new Error('このブラウザではFirebaseのWebプッシュ通知を利用できません。');
+    stage='通知用Service Workerの登録';result.textContent='③ 通知の受信機能を準備中…';
     const worker=await navigator.serviceWorker.register('./push-test-sw.js',{scope:'./compact_preview.html'});
+    stage='Firebase通知トークンの取得';result.textContent='④ 通知用の端末情報を取得中…';
     const token=await getToken(getMessaging(app),{vapidKey:PUSH_TEST_VAPID_KEY,serviceWorkerRegistration:worker});
     if(!token)throw new Error('通知用の登録情報を取得できませんでした。');
+    stage='Cloudflareへの端末登録';result.textContent='⑤ 通知先を登録中…';
     await pushTestRequest('/register',{token});
     result.textContent='✓ 通知の受信準備ができました！管理者からテスト通知を送ってもらってください。';
-  }catch(error){console.error('Parent push registration failed',error);result.textContent='設定できませんでした：'+(error?.message||String(error))}
+  }catch(error){console.error('Parent push registration failed at '+stage,error);result.textContent='設定できませんでした（'+stage+'）：'+(error?.message||String(error))}
   finally{btn.disabled=false}
 };
 $('noticeTestButton').onclick=async()=>{
