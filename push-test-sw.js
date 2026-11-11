@@ -10,16 +10,17 @@ firebase.initializeApp({
   appId:'1:408668881637:web:63464582c7bd720949ca0c'
 });
 self.addEventListener('install',()=>self.skipWaiting());
+// Keep the badge operation alive for the full push event (iOS Home Screen apps).
+self.addEventListener('push',event=>{
+  if(typeof self.navigator.setAppBadge==='function'){
+    event.waitUntil(self.navigator.setAppBadge(1).catch(error=>console.warn('App badge unavailable',error)));
+  }
+});
 const messaging=firebase.messaging();
 messaging.onBackgroundMessage(payload=>{
   const title=payload.data?.title||'キッズ出欠・通知テスト';
   const body=payload.data?.body||'活動予定が追加・変更されました。';
-  // iOS Home Screen web apps need an explicit Badging API update.
-  // Keep the notification visible even when the badge API is unsupported.
-  const badgePromise=typeof self.navigator.setAppBadge==='function'
-    ? self.navigator.setAppBadge(1).catch(error=>console.warn('App badge unavailable',error))
-    : Promise.resolve();
-  const notificationPromise=self.registration.showNotification(title,{
+  return self.registration.showNotification(title,{
     body,
     icon:'./icon-192.png',
     badge:'./icon-192.png',
@@ -28,7 +29,6 @@ messaging.onBackgroundMessage(payload=>{
     silent:true,
     data:{url:'./compact_preview.html?notification-test=1'}
   });
-  return Promise.all([badgePromise,notificationPromise]);
 });
 self.addEventListener('notificationclick',event=>{
   event.notification.close();
