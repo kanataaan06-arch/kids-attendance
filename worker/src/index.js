@@ -26,7 +26,7 @@ async function accessToken(env){
   cached={email:env.FCM_CLIENT_EMAIL,token:d.access_token,expires:Date.now()+d.expires_in*1000};return cached.token;
 }
 export function message(token){return {message:{token,data:{title:'キッズ出欠・通知テスト',body:'活動予定が追加・変更されました。出欠管理アプリをご確認ください。'},webpush:{headers:{Urgency:'normal',TTL:'300'},fcm_options:{link:'https://kanataaan06-arch.github.io/kids-attendance/compact_preview.html?notification-test=1'}}}}}
-export async function handle(request,env,deps={identity,role,accessToken,fetch}){
+export async function handle(request,env,deps={identity,role,accessToken,fetch:(...args)=>fetch(...args)}){
   if(!env.TEST_PARENT_UID||!env.DB)fail(503,'Workerの保護者UID・D1設定が必要です。');
   const token=request.headers.get('Authorization')?.match(/^Bearer (\S+)$/)?.[1];
   if(!token)fail(401,'ログインが必要です。');
