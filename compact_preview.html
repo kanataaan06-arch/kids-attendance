@@ -230,6 +230,9 @@ async function pushTestRequest(path,data){
 let noticeRequestId=null;
 // Clear the iOS Home Screen badge once the parent opens or returns to the app.
 async function clearParentBadge(){
+  // Android launchers usually derive badge counts from active notifications.
+  // Do not clear Android badges when the app renders or regains focus.
+  if(!/iPhone|iPad|iPod/i.test(navigator.userAgent))return;
   if(profile?.role!=='parent'||typeof navigator.clearAppBadge!=='function')return;
   try{await navigator.clearAppBadge()}catch(error){console.warn('App badge could not be cleared',error)}
 }
