@@ -739,7 +739,7 @@ $('noticeTestButton').onclick=()=>{
   if(profile?.role!=='admin')return;
   const recipients=members.filter(m=>m.role==='member'&&m.id!==me.uid);
   const message='活動予定が追加・変更されました。出欠管理アプリをご確認ください。';
-  const ok=window.confirm('【テスト・実際には送信されません】\\n\\n宛先：講師 '+recipients.length+'人\\n通知文：'+message+'\\n\\n通知ボタンの操作をテストしますか？');
+  const ok=window.confirm('【テスト・実際には送信されません】\n\n宛先：講師 '+recipients.length+'人\n通知文：'+message+'\n\n通知ボタンの操作をテストしますか？');
   if(!ok)return;
   const result=$('noticeTestResult');
   result.hidden=false;
