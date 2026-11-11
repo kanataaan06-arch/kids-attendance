@@ -26,7 +26,9 @@ button,select,input{font:inherit;border:1px solid #cdd4df;border-radius:9px;padd
 .activity-date span{font-size:12px;font-weight:700}
 .weekday-date,.weekday-date strong,.weekday-date span{color:#202938}
 .holiday-date,.holiday-date strong,.holiday-date span{color:#d03948}
+.saturday-date,.saturday-date strong,.saturday-date span{color:#2463c9}
 #chosenDates .holiday-date{color:#d03948}
+#chosenDates .saturday-date{color:#2463c9}
 #chosenDates .weekday-date{color:#202938}
 .activity-title{font-size:17px;font-weight:750;color:#14243f}
 .activity-unanswered-badge{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;margin-left:8px;padding:3px 8px;border-radius:999px;background:#fff1f1;border:1px solid #efb3b7;color:#b42332;font-size:12px;font-weight:800;line-height:1.35;white-space:nowrap}
@@ -246,7 +248,9 @@ function japaneseHolidays(year){
 function dateColorClass(s){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(s||''))return '';
   const d=new Date(s+'T12:00:00');
-  return d.getDay()===0||d.getDay()===6||japaneseHolidays(d.getFullYear()).has(s)?'holiday-date':'weekday-date';
+  if(d.getDay()===0||japaneseHolidays(d.getFullYear()).has(s))return 'holiday-date';
+  if(d.getDay()===6)return 'saturday-date';
+  return 'weekday-date';
 }
 const dateLabel=s=>{let d=new Date(s+'T12:00:00');return `${d.getMonth()+1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`};
 const today=()=>{let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
