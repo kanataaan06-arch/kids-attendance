@@ -9,11 +9,12 @@ firebase.initializeApp({
   messagingSenderId:'408668881637',
   appId:'1:408668881637:web:63464582c7bd720949ca0c'
 });
+self.addEventListener('install',()=>self.skipWaiting());
 const messaging=firebase.messaging();
 messaging.onBackgroundMessage(payload=>{
   const title=payload.data?.title||'キッズ出欠・通知テスト';
   const body=payload.data?.body||'活動予定が追加・変更されました。';
-  self.registration.showNotification(title,{
+  return self.registration.showNotification(title,{
     body,
     icon:'./icon-192.png',
     badge:'./icon-192.png',

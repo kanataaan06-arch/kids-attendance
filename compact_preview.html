@@ -209,21 +209,34 @@ button,select,input{font:inherit;border:1px solid #cdd4df;border-radius:9px;padd
 <label class="time-choice"><input type="radio" name="timePreset" value="custom"><span>自由入力</span></label>
 </div><input id="allDay" type="checkbox" class="hidden" aria-hidden="true" tabindex="-1"></div>
 <div id="customTimes" class="wide hidden"><div class="fields"><label>🟢 開始時間<input id="start" type="time" value="09:00"></label><label>🔴 終了時間<input id="end" type="time" value="18:00"></label></div></div><div class="wide"><div class="time-title">📍 活動場所</div><div class="time-options" role="radiogroup" aria-label="活動場所"><label class="time-choice"><input type="radio" name="placePreset" value="里山" checked><span>里山</span></label><label class="time-choice"><input type="radio" name="placePreset" value="ドラマ" ><span>ドラマ</span></label><label class="time-choice"><input type="radio" name="placePreset" value="マルチ" ><span>マルチ</span></label><label class="time-choice"><input type="radio" name="placePreset" value="パフォ" ><span>パフォ</span></label><label class="time-choice"><input type="radio" name="placePreset" value="研修室" ><span>研修室</span></label><label class="time-choice"><input type="radio" name="placePreset" value="自由入力" ><span>自由入力</span></label></div></div><label id="customPlaceLabel" class="wide hidden">✏️ 活動場所を入力<input id="customPlace" maxlength="100" placeholder="活動場所を入力してください"></label></div><p><button class="primary" id="add">まとめて登録する</button></p></div></section>
-<section id="past" class="hidden"></section><section id="deleteManager" class="hidden"></section><section id="members" class="hidden"><div class="card"><div class="member-heading"><h3>👥 メンバーの管理</h3><span id="memberCount" class="member-count">0 / 10人</span></div><p class="muted">登録中の講師と権限を確認できます。</p><div class="notice-test-panel" id="noticeTestPanel"><h4>📢 活動予定のお知らせ（テスト版）</h4><p>予定の追加・変更が終わったら、講師全員へまとめて知らせるためのボタンです。</p><p><strong>保護者のみへ送信するテストです。</strong> 通知を許可した保護者の端末に1件だけ送ります。講師には送りません。Firebase側の設定完了後に使えます。</p><button type="button" id="noticeTestButton" class="primary">📢 保護者にテスト通知を送る</button><p id="noticeTestResult" class="notice-test-result" role="status" aria-live="polite" hidden></p></div><div id="memberlist"></div><div class="member-add"><h3>➕ 新しいメンバーを承認</h3><p class="muted">相手が一度Googleログインして表示されたユーザーIDを入力してください。</p><label>ユーザーID（UID）<input id="memberuid" placeholder="相手が送ってくれたユーザーID"></label><p class="small muted">表示名は本人が登録します。</p><button id="addmember" class="primary">メンバーを承認する</button></div></div></section></div>
+<section id="past" class="hidden"></section><section id="deleteManager" class="hidden"></section><section id="members" class="hidden"><div class="card"><div class="member-heading"><h3>👥 メンバーの管理</h3><span id="memberCount" class="member-count">0 / 10人</span></div><p class="muted">登録中の講師と権限を確認できます。</p><div class="notice-test-panel" id="noticeTestPanel"><h4>📢 活動予定のお知らせ（テスト版）</h4><p>予定の追加・変更が終わったら、講師全員へまとめて知らせるためのボタンです。</p><p><strong>保護者のみへ送信するテストです。</strong> 指定した夫の保護者アカウントで最後に登録した端末に1件だけ送ります。講師には送りません。Cloudflare Workerの設定完了後に使えます。</p><button type="button" id="noticeTestButton" class="primary">📢 保護者にテスト通知を送る</button><p id="noticeTestResult" class="notice-test-result" role="status" aria-live="polite" hidden></p></div><div id="memberlist"></div><div class="member-add"><h3>➕ 新しいメンバーを承認</h3><p class="muted">相手が一度Googleログインして表示されたユーザーIDを入力してください。</p><label>ユーザーID（UID）<input id="memberuid" placeholder="相手が送ってくれたユーザーID"></label><p class="small muted">表示名は本人が登録します。</p><button id="addmember" class="primary">メンバーを承認する</button></div></div></section></div>
 </main>
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import {getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,query,where,orderBy,serverTimestamp,writeBatch,Timestamp,runTransaction,arrayUnion,arrayRemove} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
-import {getMessaging,getToken,isSupported as isMessagingSupported} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-messaging.js';
-import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-functions.js';
-import {PUSH_TEST_VAPID_KEY} from './push-test-config.js';
+import {getMessaging,getToken,onMessage,isSupported as isMessagingSupported} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-messaging.js';
+import {PUSH_TEST_VAPID_KEY,PUSH_TEST_WORKER_URL} from './push-test-config.js';
 const firebaseConfig={apiKey:'AIzaSyCbE1BqIxMGke2vT4FcyZKWLqQX6YmzEsU',authDomain:'kids-attendance-b89d4.firebaseapp.com',projectId:'kids-attendance-b89d4',storageBucket:'kids-attendance-b89d4.firebasestorage.app',messagingSenderId:'408668881637',appId:'1:408668881637:web:63464582c7bd720949ca0c'};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();
-const pushTestFunctions=getFunctions(app,'us-central1');
+async function pushTestRequest(path,data){
+  if(!PUSH_TEST_WORKER_URL||!/^https:\/\/[^/]+\.workers\.dev$/.test(PUSH_TEST_WORKER_URL))throw new Error('Cloudflare WorkerのURLを設定してください。');
+  const user=auth.currentUser;if(!user)throw new Error('ログインしてください。');
+  const response=await fetch(PUSH_TEST_WORKER_URL+path,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await user.getIdToken()},body:JSON.stringify(data)});
+  const reply=await response.json();if(!response.ok)throw new Error(reply.message||'送信に失敗しました。');return reply;
+}
+let noticeRequestId=null;
+// FCM forwards foreground messages to the page instead of onBackgroundMessage.
+isMessagingSupported().then(supported=>{
+  if(supported)onMessage(getMessaging(app),async payload=>{
+    if(profile?.role!=='parent')return;
+    const registration=await navigator.serviceWorker.getRegistration(new URL('./compact_preview.html',location.href));
+    if(registration)await registration.showNotification(payload.data?.title||'キッズ出欠・通知テスト',{body:payload.data?.body||'活動予定が追加・変更されました。',icon:'./icon-192.png',tag:'kids-parent-push-test',renotify:false,silent:true});
+  });
+}).catch(()=>{});
 const $=id=>document.getElementById(id);const loadingTasks=new Set(['startup']);function setLoading(key,active,message='読み込み中です…'){active?loadingTasks.add(key):loadingTasks.delete(key);$('loadingOverlay').classList.toggle('hidden',loadingTasks.size===0);if(active)$('loadingText').textContent=message}const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const bulkDrafts=new Map();const deleteSelection=new Set();let deletePeriod='future',deleteMonth='all',deleteKind='all',deletePlace='all',deleteConfirm=false,deleteBusy=false;let futureMonth='';let pastYear='',pastMonth='',pastKind='all',pastOptionsOpen=false,pastEvents=[],pastLoading=false,pastLoadedMonth='',pastRequest=0,deleteHistory=[],deleteHistoryLoaded=false,deleteHistoryLoading=false;let myPendingName='',me=null,profile=null,members=[],events=[],tab='future',unsubs=[],answerUnsubs=new Map();
-const clean=()=>{[...unsubs,...answerUnsubs.values()].forEach(fn=>fn());unsubs=[];answerUnsubs.clear();members=[];events=[];profile=null;myPendingName='';deleteSelection.clear();deleteConfirm=false;deleteBusy=false;pastEvents=[];pastLoadedMonth='';pastLoading=false;pastRequest++;deleteHistory=[];deleteHistoryLoaded=false;deleteHistoryLoading=false;};
+const clean=()=>{$('parentPushTest').classList.add('hidden');[...unsubs,...answerUnsubs.values()].forEach(fn=>fn());unsubs=[];answerUnsubs.clear();members=[];events=[];profile=null;myPendingName='';deleteSelection.clear();deleteConfirm=false;deleteBusy=false;pastEvents=[];pastLoadedMonth='';pastLoading=false;pastRequest++;deleteHistory=[];deleteHistoryLoaded=false;deleteHistoryLoading=false;};
 function notify(s,bad=false){$('message').textContent=s;$('message').className='notice'+(bad?' error':'');}
 function fail(e){console.error('Firestore operation failed:',{code:e?.code,message:e?.message,name:e?.name,stack:e?.stack},e);notify('操作できませんでした'+(e?.code?' ['+e.code+']':'')+'：'+(e?.message||String(e)),true)}
 // Japanese national holidays, including substitute holidays and citizens' holidays (2000–2099).
@@ -540,7 +553,7 @@ function renderDeleteManager(){
 async function executeBulkDelete(){
   if(profile?.role!=='admin'||!deleteConfirm||deleteBusy)return;
   const targets=[...events,...deleteHistory].filter(e=>deleteSelection.has(e.id));if(!targets.length)return;
-  if(!confirm(targets.length+'件の予定と全員の出欠回答を完全に削除します。\\n元に戻せません。実行しますか？'))return;
+  if(!confirm(targets.length+'件の予定と全員の出欠回答を完全に削除します。\n元に戻せません。実行しますか？'))return;
   deleteBusy=true;setLoading('bulkDelete',true,'予定と出欠回答を削除処理中です…');renderDeleteManager();
   let done=0;const errors=[];
   // Optimize only deletion. Keep the proven login and Firestore listeners unchanged.
@@ -755,6 +768,7 @@ $('enableParentPush').onclick=async()=>{
     if(!('Notification' in window)||!('serviceWorker' in navigator)||!('PushManager' in window)){
       throw new Error('この端末・ブラウザではWebプッシュ通知に対応していません。');
     }
+    if(!PUSH_TEST_WORKER_URL)throw new Error('Cloudflare WorkerのURLが未設定です。');
     if(!PUSH_TEST_VAPID_KEY){
       throw new Error('Firebaseの公開VAPIDキーがまだ設定されていません。管理者側の設定が必要です。');
     }
@@ -764,22 +778,23 @@ $('enableParentPush').onclick=async()=>{
     const worker=await navigator.serviceWorker.register('./push-test-sw.js',{scope:'./compact_preview.html'});
     const token=await getToken(getMessaging(app),{vapidKey:PUSH_TEST_VAPID_KEY,serviceWorkerRegistration:worker});
     if(!token)throw new Error('通知用の登録情報を取得できませんでした。');
-    await httpsCallable(pushTestFunctions,'registerParentPushTestToken')({token});
+    await pushTestRequest('/register',{token});
     result.textContent='✓ 通知の受信準備ができました！管理者からテスト通知を送ってもらってください。';
   }catch(error){console.error('Parent push registration failed',error);result.textContent='設定できませんでした：'+(error?.message||String(error))}
   finally{btn.disabled=false}
 };
 $('noticeTestButton').onclick=async()=>{
   if(profile?.role!=='admin')return;
-  if(!window.confirm('【保護者のみ・通知テスト】\\n\\n保護者の通知許可済み端末に、活動予定のお知らせを1件送信します。\\n講師には送りません。\\n\\n送信しますか？'))return;
+  if(!window.confirm('【保護者のみ・通知テスト】\n\n指定した夫のiPhoneに、活動予定のお知らせを1件送信します。\n講師には送りません。\n\n送信しますか？'))return;
   const btn=$('noticeTestButton'),result=$('noticeTestResult');
   btn.disabled=true;result.hidden=false;result.textContent='保護者へテスト通知を送信しています…';
   try{
-    const reply=await httpsCallable(pushTestFunctions,'sendParentPushTestNotification')({});
-    const d=reply.data||{};
+    noticeRequestId ||= crypto.randomUUID();
+    const d=await pushTestRequest('/send',{requestId:noticeRequestId});
+    noticeRequestId=null;
     result.textContent=d.sent>0?'✓ '+d.sent+'台に送信しました。iPhoneの通知を確認してください。':(d.message||'送信できませんでした。受信側の通知登録を確認してください。');
     if(d.failed)result.textContent+='（送信失敗：'+d.failed+'件）';
-  }catch(error){console.error('Parent push send failed',error);result.textContent='送信できませんでした：'+(error?.message||String(error))+'。Firebaseのテスト用関数がデプロイ済みか確認してください。'}
+  }catch(error){console.error('Parent push send failed',error);result.textContent='送信できませんでした：'+(error?.message||String(error))+'。Cloudflare Workerの設定とiPhoneの受信状況を確認してください。再試行では同じ送信IDを使用します。'}
   finally{btn.disabled=false}
 };
 $('addmember').onclick=async()=>{if(profile?.role!=='admin')return;const uid=$('memberuid').value.trim();if(!uid){alert('ユーザーIDを入力してください');return}if(members.some(m=>m.id===uid)){alert('この人はすでに登録済みです');return}if(members.length>=10){alert('メンバーは10人までです');return}try{const nameSnap=await getDoc(doc(db,'userProfiles',uid));const name=nameSnap.exists()?nameSnap.data().name?.trim():'';if(!name){alert('相手の名前が未登録です。本人に名前を保存してもらってください');return}const approval=writeBatch(db);approval.set(doc(db,'members',uid),{name,role:'member',order:members.length});approval.set(doc(db,'accessStatus',uid),{role:'member'});await approval.commit();$('memberuid').value='';notify(name+'さんを承認しました。相手にページを再読み込みしてもらってください')}catch(e){fail(e)}};

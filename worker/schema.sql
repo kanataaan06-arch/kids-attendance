@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS recipient (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  uid TEXT NOT NULL,
+  token TEXT NOT NULL,
+  last_attempt INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS deliveries (
+  id TEXT PRIMARY KEY,
+  created_at INTEGER NOT NULL
+);

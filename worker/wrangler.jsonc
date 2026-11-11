@@ -1,0 +1,11 @@
+{
+  "name": "morning-grass-0a11",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "vars": {
+    "FIREBASE_PROJECT_ID": "kids-attendance-b89d4",
+    "ALLOWED_ORIGIN": "https://kanataaan06-arch.github.io"
+  },
+  "d1_databases": [{"binding":"DB","database_name":"kids-attendance-push-test","database_id":"REPLACE_WITH_D1_DATABASE_ID"}]
+}

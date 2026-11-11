@@ -1,0 +1,1 @@
+{"name":"kids-attendance-push-test","private":true,"type":"module","scripts":{"test":"node --test","deploy":"wrangler deploy","check":"wrangler deploy --dry-run"},"dependencies":{"jose":"^6.1.0"},"devDependencies":{"wrangler":"^4.0.0"}}

@@ -2,3 +2,9 @@ node_modules/
 .firebase/
 *-debug.log
 tests/.client-helpers.generated.mjs
+
+.dev.vars
+.env*
+*.pem
+*service-account*.json
+.wrangler/
