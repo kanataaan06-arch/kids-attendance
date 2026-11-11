@@ -68,7 +68,7 @@ export async function handle(request,env,deps={identity,role,accessToken,fetch})
       const code=error.error?.details?.map(d=>d.errorCode).find(Boolean)||error.error?.status||'UNKNOWN';
       diagnostics.push(String(r.status)+'/'+String(code).slice(0,60));
       if(error.error?.details?.some(d=>d.errorCode==='UNREGISTERED'))await env.DB.prepare('DELETE FROM recipients WHERE uid=? AND token=?').bind(env.TEST_PARENT_UID,recipient.token).run();
-    }catch{failed++;diagnostics.push('NETWORK_ERROR')} // Ambiguous delivery is never automatically retried.
+    }catch(e){failed++;const reason=String(e?.message||e?.name||'unknown').replace(/Bearer\s+\S+/gi,'Bearer [redacted]').slice(0,120);diagnostics.push('NETWORK_ERROR/'+reason)} // Ambiguous delivery is never automatically retried.
   }
   return {sent,failed,registered:recipients.length,message:sent?'':'FCM送信に失敗しました。診断コード：'+[...new Set(diagnostics)].join(', ')};
 }
