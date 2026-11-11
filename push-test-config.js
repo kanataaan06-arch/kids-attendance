@@ -3,4 +3,4 @@
 export const PUSH_TEST_VAPID_KEY = 'BBwFa21p9mma29qEn89ZoBpzXZKbkUi2n1zrtnbfh7opEuOQ7JOZncK4zh6691b8vizbJGyZ43vZClAJmtObr-4';
 
 // Public Worker origin only; no credentials. Copy the exact URL from Cloudflare.
-export const PUSH_TEST_WORKER_URL = '';
+export const PUSH_TEST_WORKER_URL = 'https://morning-grass-0a11.kanataaan06.workers.dev';

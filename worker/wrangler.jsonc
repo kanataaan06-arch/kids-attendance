@@ -7,5 +7,5 @@
     "FIREBASE_PROJECT_ID": "kids-attendance-b89d4",
     "ALLOWED_ORIGIN": "https://kanataaan06-arch.github.io"
   },
-  "d1_databases": [{"binding":"DB","database_name":"kids-attendance-push-test","database_id":"REPLACE_WITH_D1_DATABASE_ID"}]
+  "d1_databases": [{"binding":"DB","database_name":"kids-attendance-push-test","database_id":"9a0ff5bf-8bfb-47df-9d75-1d1b904fde82"}]
 }
