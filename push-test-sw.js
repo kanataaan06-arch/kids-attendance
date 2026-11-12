@@ -29,7 +29,7 @@ messaging.onBackgroundMessage(payload=>{
     body,
     icon:'./icon-192.png',
     badge:'./icon-192.png',
-    tag:'kids-parent-push-test',
+    tag:'kids-parent-push-test-'+Date.now(),
     renotify:false,
     silent:false,
     data:{url:'./compact_preview.html?notification-test=1'}
