@@ -20,7 +20,12 @@ const messaging=firebase.messaging();
 messaging.onBackgroundMessage(payload=>{
   const title=payload.data?.title||'キッズ出欠・通知テスト';
   const body=payload.data?.body||'活動予定が追加・変更されました。';
-  return self.registration.showNotification(title,{
+  // Set the badge in the same background handler as the notification.
+  // Some iOS WebKit versions do not reliably run a separate push listener.
+  const badge=typeof self.navigator.setAppBadge==='function'
+    ? self.navigator.setAppBadge(1).catch(error=>console.warn('App badge unavailable',error))
+    : Promise.resolve();
+  const notification=self.registration.showNotification(title,{
     body,
     icon:'./icon-192.png',
     badge:'./icon-192.png',
@@ -29,6 +34,7 @@ messaging.onBackgroundMessage(payload=>{
     silent:true,
     data:{url:'./compact_preview.html?notification-test=1'}
   });
+  return Promise.all([badge,notification]);
 });
 self.addEventListener('notificationclick',event=>{
   event.notification.close();
