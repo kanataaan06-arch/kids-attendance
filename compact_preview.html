@@ -243,6 +243,7 @@ isMessagingSupported().then(supported=>{
   if(supported)onMessage(getMessaging(app),async payload=>{
     if(profile?.role!=='parent')return;
     const registration=await navigator.serviceWorker.getRegistration(new URL('./compact_preview.html',location.href));
+    if(typeof navigator.setAppBadge==='function')await navigator.setAppBadge(1).catch(error=>console.warn('Foreground badge unavailable',error));
     if(registration)await registration.showNotification(payload.data?.title||'キッズ出欠・通知テスト',{body:payload.data?.body||'活動予定が追加・変更されました。',icon:'./icon-192.png',tag:'kids-parent-push-test',renotify:false,silent:true});
   });
 }).catch(()=>{});
