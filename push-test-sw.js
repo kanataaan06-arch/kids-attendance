@@ -31,7 +31,7 @@ messaging.onBackgroundMessage(payload=>{
     badge:'./icon-192.png',
     tag:'kids-parent-push-test',
     renotify:false,
-    silent:true,
+    silent:false,
     data:{url:'./compact_preview.html?notification-test=1'}
   });
   return Promise.all([badge,notification]);
