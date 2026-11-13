@@ -1252,7 +1252,7 @@ function message2(token) {
 }
 __name(message2, "message");
 async function handle(request, env, deps = { identity, role, accessToken, fetch: (...args) => fetch(...args) }) {
-  if (!uid || !env.DB) fail(503, "Worker\u306E\u4FDD\u8B77\u8005UID\u30FBD1\u8A2D\u5B9A\u304C\u5FC5\u8981\u3067\u3059\u3002");
+  if (!env.DB) fail(503, "D1データベースが未設定です。");
   const token = request.headers.get("Authorization")?.match(/^Bearer (\S+)$/)?.[1];
   if (!token) fail(401, "\u30ED\u30B0\u30A4\u30F3\u304C\u5FC5\u8981\u3067\u3059\u3002");
   const uid = await deps.identity(token, env.FIREBASE_PROJECT_ID);
