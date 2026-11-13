@@ -1,0 +1,24 @@
+{
+  "id": "./staff_integrated_preview.html",
+  "name": "キッズ出欠・スタッフ通知テスト",
+  "short_name": "スタッフ通知",
+  "start_url": "./staff_integrated_preview.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1966d3",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
