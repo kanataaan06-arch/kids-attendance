@@ -242,7 +242,7 @@ window.addEventListener('pageshow',()=>clearStaffBadge());
 isMessagingSupported().then(supported=>{
   if(supported)onMessage(getMessaging(app),async payload=>{
     if(!['member','admin'].includes(profile?.role))return;
-    const registration=await navigator.serviceWorker.getRegistration(new URL('./staff_integrated_preview.html',location.href));
+    const registration=await navigator.serviceWorker.getRegistration(new URL('./staff_integrated_preview',location.href));
     if(typeof navigator.setAppBadge==='function')await navigator.setAppBadge(1).catch(error=>console.warn('Foreground badge unavailable',error));
     if(registration)await registration.showNotification(payload.data?.title||'キッズ出欠',{body:payload.data?.body||'活動予定を追加しました。',icon:'./icon-192.png',tag:'kids-staff-push-test-'+Date.now(),renotify:false,silent:false});
   });
@@ -617,7 +617,7 @@ async function syncStaffPushUI(){
   let registered=false;
   try{
     if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&'serviceWorker' in navigator){
-      const registration=await navigator.serviceWorker.getRegistration(new URL('./staff_integrated_preview.html',location.href));
+      const registration=await navigator.serviceWorker.getRegistration(new URL('./staff_integrated_preview',location.href));
       if(registration&&!staffPushWorkerUpdateChecked){
         staffPushWorkerUpdateChecked=true;
         registration.update().catch(error=>console.warn('Notification worker update failed',error));
@@ -830,7 +830,7 @@ $('enableParentPush').onclick=async()=>{
     stage='Firebase通知の対応状況';result.textContent='② 通知機能を確認中…';
     if(!await isMessagingSupported())throw new Error('このブラウザではFirebaseのWebプッシュ通知を利用できません。');
     stage='通知用Service Workerの登録';result.textContent='③ 通知の受信機能を準備中…';
-    const worker=await navigator.serviceWorker.register('./push-staff-preview-sw.js',{scope:'./staff_integrated_preview.html'});
+    const worker=await navigator.serviceWorker.register('./push-staff-preview-sw.js',{scope:'./staff_integrated_preview'});
     stage='Firebase通知トークンの取得';result.textContent='④ 通知用の端末情報を取得中…';
     const token=await getToken(getMessaging(app),{vapidKey:PUSH_STAFF_VAPID_KEY,serviceWorkerRegistration:worker});
     if(!token)throw new Error('通知用の登録情報を取得できませんでした。');
