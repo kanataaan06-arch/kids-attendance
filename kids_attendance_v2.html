@@ -26,7 +26,9 @@ button,select,input{font:inherit;border:1px solid #cdd4df;border-radius:9px;padd
 .activity-date span{font-size:12px;font-weight:700}
 .weekday-date,.weekday-date strong,.weekday-date span{color:#202938}
 .holiday-date,.holiday-date strong,.holiday-date span{color:#d03948}
+.saturday-date,.saturday-date strong,.saturday-date span{color:#2463c9}
 #chosenDates .holiday-date{color:#d03948}
+#chosenDates .saturday-date{color:#2463c9}
 #chosenDates .weekday-date{color:#202938}
 .activity-title{font-size:17px;font-weight:750;color:#14243f}
 .activity-unanswered-badge{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;margin-left:8px;padding:3px 8px;border-radius:999px;background:#fff1f1;border:1px solid #efb3b7;color:#b42332;font-size:12px;font-weight:800;line-height:1.35;white-space:nowrap}
@@ -130,10 +132,66 @@ button,select,input{font:inherit;border:1px solid #cdd4df;border-radius:9px;padd
 .delete-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin:15px 0}.delete-toolbar label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700;flex:1 1 125px}.delete-toolbar select{width:100%;min-width:0}
 .delete-list{display:grid;gap:8px;margin:12px 0}.delete-entry{display:flex;align-items:center;gap:12px;border:1px solid #e0e5ed;border-radius:11px;padding:12px;cursor:pointer;background:#fff}.delete-entry:has(input:checked){background:#fff6f6;border-color:#f0b9bf}.delete-entry input{width:20px;height:20px;flex-shrink:0;accent-color:#c12e42}.delete-entry-content{display:flex;flex-direction:column;gap:4px;min-width:0}.delete-entry-content strong{font-size:15px}.delete-entry-content small{color:#66748a;overflow-wrap:anywhere}.delete-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.delete-danger{background:#b42332;color:#fff;border-color:#b42332}.delete-danger:disabled{opacity:.45;cursor:not-allowed}.delete-confirm{margin-top:15px;padding:15px;background:#fff6f6;border:1px solid #efb3b7;border-radius:12px}.delete-confirm strong{color:#a32030}.delete-confirm .row{margin-top:12px;gap:8px}.delete-confirm .row button{flex:1 1 150px}.delete-summary{font-size:14px;color:#66748a}.delete-empty{color:#66748a;padding:12px 0}
 @media(max-width:760px){.tabs:not(.member-only-tabs){grid-template-columns:repeat(3,minmax(0,1fr))}}
-.hidden{display:none!important}</style></head><body>
+.hidden{display:none!important}
+/* Compact comparison mode: event overview is the disclosure trigger. */
+#future .activity-card:has(> .compact-event-details),
+#past .activity-card:has(> .compact-event-details){padding:0}
+.compact-event-details{margin:0}
+.compact-event-summary{display:block;list-style:none;padding:11px 14px 10px 19px;color:inherit;cursor:pointer}
+.compact-event-summary::-webkit-details-marker{display:none}
+.compact-event-summary:focus-visible{outline:3px solid #82b5ff;outline-offset:-3px;border-radius:12px}
+.compact-event-summary .activity-overview{grid-template-columns:58px minmax(0,1fr);gap:6px 9px;min-height:0;align-items:start}
+.compact-event-summary .activity-date{grid-row:1 / span 2;align-self:start;gap:2px}
+.compact-event-summary .activity-date .compact-chevron{font-size:17px;line-height:1;color:#7387a5;margin-top:2px;font-weight:500}
+.compact-event-summary .activity-info{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;min-width:0;grid-column:2;grid-row:1}
+.compact-event-summary .activity-title{font-size:15px;line-height:1.35;flex-shrink:0}
+.compact-event-summary .activity-time{font-size:13px;padding:3px 6px;margin:0;gap:3px;line-height:1.2}
+.compact-event-summary .time-clock{font-size:12px}
+.compact-secondary-row{grid-column:2;grid-row:2;display:flex;align-items:center;flex-wrap:wrap;gap:5px 8px;min-width:0}
+.compact-event-summary .activity-venue{flex:0 0 auto;min-width:0}
+.compact-event-summary .place-badge{font-size:11px;padding:3px 6px}
+.compact-event-summary .activity-avatars{flex:1 1 100px;min-width:0;max-width:100%;margin:0;row-gap:5px}
+.compact-event-summary .activity-avatars .avatar{width:33px;height:33px}
+.compact-chevron{transition:transform .15s}
+.compact-event-details[open] .compact-chevron{transform:rotate(180deg)}
+.compact-detail-body{border-top:1px solid #e1e8f1;padding:11px 14px 14px 19px;background:#fbfdff}
+.compact-detail-body .people{margin:2px 0 12px}
+
+.compact-edit-details{margin:0;border-top:1px dashed #dbe4ef}
+.compact-edit-label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;font-weight:750;color:#2455a3;padding:11px 2px;margin:0;cursor:pointer;list-style:none;min-height:44px}
+.compact-edit-label::-webkit-details-marker{display:none}
+.compact-edit-label:focus-visible{outline:3px solid #82b5ff;outline-offset:2px}
+.compact-edit-chevron{font-size:18px;line-height:1;transition:transform .15s}
+.compact-edit-details[open] .compact-edit-chevron{transform:rotate(180deg)}
+.compact-edit-content{padding:0 2px 10px}
+
+.parent-push-test{margin:12px 0;padding:13px;border:1px solid #bcd5f3;background:#f2f7ff;border-radius:11px}
+.parent-push-test h4{margin:0 0 6px;font-size:15px}
+.parent-push-test p{font-size:13px;line-height:1.6;color:#4b5c76;margin:5px 0 10px}
+.parent-push-test button{width:100%;min-height:44px}
+.parent-push-test .push-status{margin:9px 0 0;font-weight:700;overflow-wrap:anywhere}
+.notice-test-panel{background:#f2f7ff;border:1px solid #cbdffb;border-radius:12px;padding:15px;margin:0 0 16px}
+.notice-test-panel h4{margin:0 0 8px;font-size:16px;color:#214d91}
+.notice-test-panel p{margin:6px 0 12px;font-size:13px;line-height:1.6;color:#4b5c76}
+.notice-test-panel button{width:100%;min-height:44px}
+.notice-test-result{font-size:13px;font-weight:700;color:#225f3d;margin:10px 0 0}
+.notice-test-result[hidden]{display:none}
+.preview-warning{max-width:780px;margin:12px auto 0;padding:10px 13px;box-sizing:border-box;background:#fff8e5;border:1px solid #edda9d;border-radius:11px;font-size:12px;line-height:1.5;color:#75561c}
+.preview-warning strong{display:block;font-size:13px}
+.preview-label{font-size:11px;background:#fff2d2;color:#8a5c10;border-radius:7px;padding:3px 6px;vertical-align:middle;white-space:nowrap}
+@media(max-width:390px){
+.compact-event-summary{padding:10px 11px 9px 18px}
+.compact-event-summary .activity-overview{grid-template-columns:50px minmax(0,1fr);gap:5px 7px}
+.compact-event-summary .activity-time{font-size:12px;padding:4px 6px}
+.compact-event-summary .activity-avatars .avatar{width:30px;height:30px}
+.compact-event-summary .activity-time{font-size:12px;padding:3px 5px}
+.compact-secondary-row{gap:4px 6px}
+}
+</style></head><body>
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="読み込み中"><img class="loading-logo" src="./icon-192.png" alt=""><div class="loading-spinner" aria-hidden="true"></div><span id="loadingText">読み込み中です…</span></div>
 <header><div class="site-brand"><button type="button" id="refreshLogo" class="brand-refresh" title="画面を更新" aria-label="ロゴを押して画面を更新"><img src="./icon-192.png" alt="" width="46" height="46"></button><h1>キッズ講師 - 出欠管理</h1></div></header><main>
-<div id="auth" class="card"><div class="auth-header"><img id="authavatar" class="auth-avatar hidden" alt="Googleプロフィール画像" referrerpolicy="no-referrer"><strong id="authstate">ログインしてください</strong><div id="parentLogout" class="hidden"><button type="button" id="parentLogoutButton">ログアウト</button></div></div><div class="authbar"><button id="login" class="primary">Googleでログイン</button></div><details id="unansweredAlert" class="hidden unanswered-alert"><summary id="unansweredSummary"></summary><div id="unansweredList" class="unanswered-list"></div></details><details id="myname" class="hidden profile-details"><summary>表示名を変更する</summary><div class="row"><label for="mynameinput">自分の表示名</label><input id="mynameinput" maxlength="30" placeholder="例：かなこ"><button id="savemyname">名前を保存</button></div><p id="mynamehint" class="muted"></p><div class="profile-logout"><button id="logout" class="hidden" type="button">ログアウト</button></div></details><div id="pending" class="hidden notice"><strong>承認待ちです</strong><p>管理者に登録してもらうまで予定は表示されません。</p><div class="uid" id="uid"></div><button id="copyuid">ユーザーIDをコピー</button></div></div>
+
+<div id="auth" class="card"><div class="auth-header"><img id="authavatar" class="auth-avatar hidden" alt="Googleプロフィール画像" referrerpolicy="no-referrer"><strong id="authstate">ログインしてください</strong><div id="parentLogout" class="hidden"><button type="button" id="parentPushSettingsButton" class="hidden">🔔 通知設定</button> <button type="button" id="parentLogoutButton">ログアウト</button></div></div><div class="authbar"><button id="login" class="primary">Googleでログイン</button></div><div id="parentPushTest" class="parent-push-test hidden"><h4 id="previewPushTitle">🔔 通知設定</h4><p id="previewPushDescription">iPhoneはSafariからホーム画面に追加して起動してください。AndroidはChromeで開いてください。各端末で同じ保護者アカウントにログインして登録します。通知の許可はこの端末で1回だけ必要です。</p><button id="enableParentPush" type="button" class="primary">この端末で通知を受け取る</button><p id="parentPushStatus" class="push-status" role="status" aria-live="polite"></p></div><details id="unansweredAlert" class="hidden unanswered-alert"><summary id="unansweredSummary"></summary><div id="unansweredList" class="unanswered-list"></div></details><details id="myname" class="hidden profile-details"><summary>表示名を変更する</summary><div class="row"><label for="mynameinput">自分の表示名</label><input id="mynameinput" maxlength="30" placeholder="例：かなこ"><button id="savemyname">名前を保存</button></div><p id="mynamehint" class="muted"></p><div class="profile-logout"><button id="logout" class="hidden" type="button">ログアウト</button></div></details><div id="pending" class="hidden notice"><strong>承認待ちです</strong><p>管理者に登録してもらうまで予定は表示されません。</p><div class="uid" id="uid"></div><button id="copyuid">ユーザーIDをコピー</button></div></div>
 <div id="app" class="hidden"><nav class="tabs" aria-label="画面の切り替え">
 <button type="button" data-tab="future" class="active"><span class="tab-icon" aria-hidden="true">📅</span><span class="tab-label">今後の活動</span></button>
 <button type="button" data-tab="bulk"><span class="tab-icon" aria-hidden="true">✅</span><span class="tab-label">まとめて回答</span></button>
@@ -151,17 +209,50 @@ button,select,input{font:inherit;border:1px solid #cdd4df;border-radius:9px;padd
 <label class="time-choice"><input type="radio" name="timePreset" value="custom"><span>自由入力</span></label>
 </div><input id="allDay" type="checkbox" class="hidden" aria-hidden="true" tabindex="-1"></div>
 <div id="customTimes" class="wide hidden"><div class="fields"><label>🟢 開始時間<input id="start" type="time" value="09:00"></label><label>🔴 終了時間<input id="end" type="time" value="18:00"></label></div></div><div class="wide"><div class="time-title">📍 活動場所</div><div class="time-options" role="radiogroup" aria-label="活動場所"><label class="time-choice"><input type="radio" name="placePreset" value="里山" checked><span>里山</span></label><label class="time-choice"><input type="radio" name="placePreset" value="ドラマ" ><span>ドラマ</span></label><label class="time-choice"><input type="radio" name="placePreset" value="マルチ" ><span>マルチ</span></label><label class="time-choice"><input type="radio" name="placePreset" value="パフォ" ><span>パフォ</span></label><label class="time-choice"><input type="radio" name="placePreset" value="研修室" ><span>研修室</span></label><label class="time-choice"><input type="radio" name="placePreset" value="自由入力" ><span>自由入力</span></label></div></div><label id="customPlaceLabel" class="wide hidden">✏️ 活動場所を入力<input id="customPlace" maxlength="100" placeholder="活動場所を入力してください"></label></div><p><button class="primary" id="add">まとめて登録する</button></p></div></section>
-<section id="past" class="hidden"></section><section id="deleteManager" class="hidden"></section><section id="members" class="hidden"><div class="card"><div class="member-heading"><h3>👥 メンバーの管理</h3><span id="memberCount" class="member-count">0 / 10人</span></div><p class="muted">登録中の講師と権限を確認できます。</p><div id="memberlist"></div><div class="member-add"><h3>➕ 新しいメンバーを承認</h3><p class="muted">相手が一度Googleログインして表示されたユーザーIDを入力してください。</p><label>ユーザーID（UID）<input id="memberuid" placeholder="相手が送ってくれたユーザーID"></label><p class="small muted">表示名は本人が登録します。</p><button id="addmember" class="primary">メンバーを承認する</button></div></div></section></div>
+<section id="past" class="hidden"></section><section id="deleteManager" class="hidden"></section><section id="members" class="hidden"><div class="card"><div class="member-heading"><h3>👥 メンバーの管理</h3><span id="memberCount" class="member-count">0 / 10人</span></div><p class="muted">登録中の講師と権限を確認できます。</p><div class="notice-test-panel"><button type="button" id="staffNoticeTestButton" class="primary">📢 スタッフ全員に通知</button><p id="staffNoticeTestResult" class="notice-test-result" role="status" aria-live="polite" hidden></p></div><div id="memberlist"></div><div class="member-add"><h3>➕ 新しいメンバーを承認</h3><p class="muted">相手が一度Googleログインして表示されたユーザーIDを入力してください。</p><label>ユーザーID（UID）<input id="memberuid" placeholder="相手が送ってくれたユーザーID"></label><p class="small muted">表示名は本人が登録します。</p><button id="addmember" class="primary">メンバーを承認する</button></div></div></section></div>
 </main>
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import {getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,query,where,orderBy,serverTimestamp,writeBatch,Timestamp,runTransaction,arrayUnion,arrayRemove} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+import {getMessaging,getToken,onMessage,isSupported as isMessagingSupported} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-messaging.js';
+import {PUSH_TEST_VAPID_KEY,PUSH_TEST_WORKER_URL} from './push-test-config.js';
 const firebaseConfig={apiKey:'AIzaSyCbE1BqIxMGke2vT4FcyZKWLqQX6YmzEsU',authDomain:'kids-attendance-b89d4.firebaseapp.com',projectId:'kids-attendance-b89d4',storageBucket:'kids-attendance-b89d4.firebasestorage.app',messagingSenderId:'408668881637',appId:'1:408668881637:web:63464582c7bd720949ca0c'};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();
+// Test preview only: always offer Google account selection (e.g. parent's account on shared Android).
+provider.setCustomParameters({prompt:'select_account'});
+const STAFF_PREVIEW_WORKER_URL = 'https://kids-attendance-staff-push.kanataaan06.workers.dev';
+const isStaffPushRole=role=>role==='member'||role==='admin';
+const isPreviewPushRole=isStaffPushRole;
+async function pushTestRequest(path,data,workerUrl=PUSH_TEST_WORKER_URL){
+  if(!workerUrl||!/^https:\/\/[^/]+\.workers\.dev$/.test(workerUrl))throw new Error('Cloudflare WorkerのURLを設定してください。');
+  const user=auth.currentUser;if(!user)throw new Error('ログインしてください。');
+  const response=await fetch(workerUrl+path,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await user.getIdToken()},body:JSON.stringify(data)});
+  const reply=await response.json();if(!response.ok)throw new Error(reply.message||'送信に失敗しました。');return reply;
+}
+const noticeRequestIds={parent:null,staff:null};
+// Clear the iOS Home Screen badge once the parent opens or returns to the app.
+async function clearParentBadge(){
+  // Android launchers usually derive badge counts from active notifications.
+  // Do not clear Android badges when the app renders or regains focus.
+  if(!/iPhone|iPad|iPod/i.test(navigator.userAgent))return;
+  if(!isPreviewPushRole(profile?.role)||typeof navigator.clearAppBadge!=='function')return;
+  try{await navigator.clearAppBadge()}catch(error){console.warn('App badge could not be cleared',error)}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)clearParentBadge()});
+window.addEventListener('pageshow',()=>clearParentBadge());
+// FCM forwards foreground messages to the page instead of onBackgroundMessage.
+isMessagingSupported().then(supported=>{
+  if(supported)onMessage(getMessaging(app),async payload=>{
+    if(!isPreviewPushRole(profile?.role))return;
+    const registration=await navigator.serviceWorker.getRegistration(new URL('./kids_attendance_v2.html',location.href));
+    if(typeof navigator.setAppBadge==='function')await navigator.setAppBadge(1).catch(error=>console.warn('Foreground badge unavailable',error));
+    if(registration)await registration.showNotification(payload.data?.title||'キッズ出欠・通知テスト',{body:payload.data?.body||'活動予定が追加・変更されました。',icon:'./icon-192.png',tag:'kids-parent-push-test-'+Date.now(),renotify:false,silent:false});
+  });
+}).catch(()=>{});
 const $=id=>document.getElementById(id);const loadingTasks=new Set(['startup']);function setLoading(key,active,message='読み込み中です…'){active?loadingTasks.add(key):loadingTasks.delete(key);$('loadingOverlay').classList.toggle('hidden',loadingTasks.size===0);if(active)$('loadingText').textContent=message}const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const bulkDrafts=new Map();const deleteSelection=new Set();let deletePeriod='future',deleteMonth='all',deleteKind='all',deletePlace='all',deleteConfirm=false,deleteBusy=false;let futureMonth='';let pastYear='',pastMonth='',pastKind='all',pastOptionsOpen=false,pastEvents=[],pastLoading=false,pastLoadedMonth='',pastRequest=0,deleteHistory=[],deleteHistoryLoaded=false,deleteHistoryLoading=false;let myPendingName='',me=null,profile=null,members=[],events=[],tab='future',unsubs=[],answerUnsubs=new Map();
-const clean=()=>{[...unsubs,...answerUnsubs.values()].forEach(fn=>fn());unsubs=[];answerUnsubs.clear();members=[];events=[];profile=null;myPendingName='';deleteSelection.clear();deleteConfirm=false;deleteBusy=false;pastEvents=[];pastLoadedMonth='';pastLoading=false;pastRequest++;deleteHistory=[];deleteHistoryLoaded=false;deleteHistoryLoading=false;};
+const clean=()=>{parentPushSettingsOpen=false;parentPushUiRequest++;$('parentPushTest').classList.add('hidden');$('parentPushSettingsButton').classList.add('hidden');[...unsubs,...answerUnsubs.values()].forEach(fn=>fn());unsubs=[];answerUnsubs.clear();members=[];events=[];profile=null;myPendingName='';deleteSelection.clear();deleteConfirm=false;deleteBusy=false;pastEvents=[];pastLoadedMonth='';pastLoading=false;pastRequest++;deleteHistory=[];deleteHistoryLoaded=false;deleteHistoryLoading=false;};
 function notify(s,bad=false){$('message').textContent=s;$('message').className='notice'+(bad?' error':'');}
 function fail(e){console.error('Firestore operation failed:',{code:e?.code,message:e?.message,name:e?.name,stack:e?.stack},e);notify('操作できませんでした'+(e?.code?' ['+e.code+']':'')+'：'+(e?.message||String(e)),true)}
 // Japanese national holidays, including substitute holidays and citizens' holidays (2000–2099).
@@ -201,7 +292,9 @@ function japaneseHolidays(year){
 function dateColorClass(s){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(s||''))return '';
   const d=new Date(s+'T12:00:00');
-  return d.getDay()===0||d.getDay()===6||japaneseHolidays(d.getFullYear()).has(s)?'holiday-date':'weekday-date';
+  if(d.getDay()===0||japaneseHolidays(d.getFullYear()).has(s))return 'holiday-date';
+  if(d.getDay()===6)return 'saturday-date';
+  return 'weekday-date';
 }
 const dateLabel=s=>{let d=new Date(s+'T12:00:00');return `${d.getMonth()+1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`};
 const today=()=>{let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
@@ -228,7 +321,7 @@ function venueClass(place){
   return 'venue-other';
 }
 function card(e){if(profile?.role==='parent'){const confirmed=e.instructors||[];return `<article class="card activity-card ${venueClass(e.place)}"><div class="activity-overview"><div class="activity-date ${dateColorClass(e.date)}"><strong>${Number(e.date.slice(5,7))}/${Number(e.date.slice(8,10))}</strong><span>（${'日月火水木金土'[new Date(e.date+'T12:00:00').getDay()]}）</span></div><div class="activity-info"><div class="activity-title">${activityEmoji(e.kind)} ${esc(e.kind||'通常活動')}</div><div class="activity-time"><span class="time-clock" aria-hidden="true">🕒</span><strong>${e.allDay?'終日':esc(e.start)+' 〜 '+esc(e.end)}</strong></div></div><div class="activity-venue"><span class="place-badge">📍 ${esc(e.place||'未設定')}</span></div></div>${e.date>=today()?`<div class="parent-instructors"><div class="parent-instructors-title">👥 活動する講師</div>${confirmed.length?confirmed.map(m=>`<span class="parent-instructor">${memberAvatar(m)}${esc(m.name)}</span>`).join(''):'<span class="muted">参加講師はまだ確定していません</span>'}</div>`:''}</article>`;}
-const isFuture=e.date>=today(),roster=isFuture?members.filter(m=>m.role!=='parent'):pastRoster(e),isUnanswered=isFuture&&!['○','△','×'].includes(e.answers?.[me.uid]),attendees=roster.filter(m=>e.answers?.[m.id]==='○');return `<article class="card activity-card ${venueClass(e.place)}" data-event-id="${esc(e.id)}"><div class="activity-overview"><div class="activity-date ${dateColorClass(e.date)}"><strong>${Number(e.date.slice(5,7))}/${Number(e.date.slice(8,10))}</strong><span>（${'日月火水木金土'[new Date(e.date+'T12:00:00').getDay()]}）</span></div><div class="activity-info"><div class="activity-title">${activityEmoji(e.kind)} ${esc(e.kind||"通常活動")}${isUnanswered?'<span class="activity-unanswered-badge">未回答</span>':''}</div><div class="activity-time"><span class="time-clock" aria-hidden="true">🕒</span><strong>${e.allDay?'終日':esc(e.start)+' 〜 '+esc(e.end)}</strong></div></div><div class="activity-venue"><span class="place-badge">📍 ${esc(e.place||"未設定")}</span></div><div class="activity-avatars" aria-label="参加するメンバー">${attendees.map(m=>`<span title="${esc(m.name)}（参加）">${memberAvatar(m)}</span>`).join('')}</div></div><div class="people">${roster.map(m=>`<div class="person">${memberAvatar(m)}<span>${esc(m.name)}</span> ${status(e.answers?.[m.id])}</div>`).join('')}</div><details><summary>${profile.role==='admin'?'自分の出欠を変更 / 予定を編集':'自分の出欠を変更'}</summary><div class="row">${['○','△','×'].map(s=>`<button class="status ${e.answers?.[me.uid]===s?'sel':''}" data-answer="${esc(e.id)}" data-value="${s}">${s==='○'?'○ 参加':s==='△'?'△ 未定':'× 欠席'}</button>`).join('')}</div>${profile.role==='admin'?`<div class="fields"><label class="wide">🎭 活動の種類<select data-kind-choice="${esc(e.id)}">${['通常活動','あそぼう','忍者','合宿'].map(k=>`<option value="${k}" ${(e.kind||'通常活動')===k?'selected':''}>${activityEmoji(k)} ${k}</option>`).join('')}<option value="custom" ${!['通常活動','あそぼう','忍者','合宿'].includes(e.kind||'通常活動')?'selected':''}>✨ 自由入力</option></select></label><label class="wide ${['通常活動','あそぼう','忍者','合宿'].includes(e.kind||'通常活動')?'hidden':''}" data-custom-kind-wrap="${esc(e.id)}">✨ 活動名を自由入力<input data-field="kind" data-id="${esc(e.id)}" maxlength="100" placeholder="活動名を入力" value="${esc(e.kind||'')}"></label><label>日付<input type="date" data-field="date" data-id="${esc(e.id)}" value="${esc(e.date)}"></label><label>場所<select data-place-choice="${esc(e.id)}">${['里山','ドラマ','マルチ','パフォ','研修室'].map(p=>`<option value="${p}" ${e.place===p?'selected':''}>${p}</option>`).join('')}<option value="custom" ${!['里山','ドラマ','マルチ','パフォ','研修室'].includes(e.place)?'selected':''}>自由入力</option></select></label><label class="wide ${['里山','ドラマ','マルチ','パフォ','研修室'].includes(e.place)?'hidden':''}" data-custom-place-wrap="${esc(e.id)}">活動場所を自由入力<input data-field="place" data-id="${esc(e.id)}" maxlength="100" placeholder="活動場所を入力" value="${esc(e.place||'')}"></label><label class="wide" style="flex-direction:row;align-items:center"><input type="checkbox" data-field="allDay" data-id="${esc(e.id)}" ${e.allDay?"checked":""} style="width:auto"> 終日</label><label>開始<input type="time" data-field="start" data-id="${esc(e.id)}" value="${esc(e.start)}" ${e.allDay?"disabled":""}></label><label>終了<input type="time" data-field="end" data-id="${esc(e.id)}" value="${esc(e.end)}" ${e.allDay?"disabled":""}></label></div><div class="row"><button type="button" class="danger" data-delete-event="${esc(e.id)}">この予定を削除</button></div><p class="small muted">出欠は本人のみ変更可能。予定の編集・削除は管理者のみ可能。</p>`:'<p class="small muted">出欠はいつでも本人だけが変更できます。</p>'}</details></article>`}
+const isFuture=e.date>=today(),roster=isFuture?members.filter(m=>m.role!=='parent'):pastRoster(e),isUnanswered=isFuture&&!['○','△','×'].includes(e.answers?.[me.uid]),attendees=roster.filter(m=>e.answers?.[m.id]==='○');return `<article class="card activity-card ${venueClass(e.place)}" data-event-id="${esc(e.id)}"><details class="compact-event-details"><summary class="compact-event-summary"><div class="activity-overview"><div class="activity-date ${dateColorClass(e.date)}"><strong>${Number(e.date.slice(5,7))}/${Number(e.date.slice(8,10))}</strong><span>（${'日月火水木金土'[new Date(e.date+'T12:00:00').getDay()]}）</span><span class="compact-chevron" aria-hidden="true">⌄</span></div><div class="activity-info"><div class="activity-title">${activityEmoji(e.kind)} ${esc(e.kind||"通常活動")}${isUnanswered?'<span class="activity-unanswered-badge">未回答</span>':''}</div><div class="activity-time"><span class="time-clock" aria-hidden="true">🕒</span><strong>${e.allDay?'終日':esc(e.start)+' 〜 '+esc(e.end)}</strong></div></div><div class="compact-secondary-row"><div class="activity-venue"><span class="place-badge">📍 ${esc(e.place||"未設定")}</span></div><div class="activity-avatars" aria-label="参加するメンバー">${attendees.map(m=>`<span title="${esc(m.name)}（参加）">${memberAvatar(m)}</span>`).join('')}</div></div></div></summary><div class="compact-detail-body"><div class="people">${roster.map(m=>`<div class="person">${memberAvatar(m)}<span>${esc(m.name)}</span> ${status(e.answers?.[m.id])}</div>`).join('')}</div>${isFuture||profile.role==='admin'?`<details class="compact-edit-details"><summary class="compact-edit-label">✏️ ${profile.role==='admin'?'自分の出欠を変更 / 予定を編集':'自分の出欠を変更'} <span class="compact-edit-chevron" aria-hidden="true">⌄</span></summary><div class="compact-edit-content"><div class="row">${['○','△','×'].map(s=>`<button class="status ${e.answers?.[me.uid]===s?'sel':''}" data-answer="${esc(e.id)}" data-value="${s}">${s==='○'?'○ 参加':s==='△'?'△ 未定':'× 欠席'}</button>`).join('')}</div>${profile.role==='admin'?`<div class="fields"><label class="wide">🎭 活動の種類<select data-kind-choice="${esc(e.id)}">${['通常活動','あそぼう','忍者','合宿'].map(k=>`<option value="${k}" ${(e.kind||'通常活動')===k?'selected':''}>${activityEmoji(k)} ${k}</option>`).join('')}<option value="custom" ${!['通常活動','あそぼう','忍者','合宿'].includes(e.kind||'通常活動')?'selected':''}>✨ 自由入力</option></select></label><label class="wide ${['通常活動','あそぼう','忍者','合宿'].includes(e.kind||'通常活動')?'hidden':''}" data-custom-kind-wrap="${esc(e.id)}">✨ 活動名を自由入力<input data-field="kind" data-id="${esc(e.id)}" maxlength="100" placeholder="活動名を入力" value="${esc(e.kind||'')}"></label><label>日付<input type="date" data-field="date" data-id="${esc(e.id)}" value="${esc(e.date)}"></label><label>場所<select data-place-choice="${esc(e.id)}">${['里山','ドラマ','マルチ','パフォ','研修室'].map(p=>`<option value="${p}" ${e.place===p?'selected':''}>${p}</option>`).join('')}<option value="custom" ${!['里山','ドラマ','マルチ','パフォ','研修室'].includes(e.place)?'selected':''}>自由入力</option></select></label><label class="wide ${['里山','ドラマ','マルチ','パフォ','研修室'].includes(e.place)?'hidden':''}" data-custom-place-wrap="${esc(e.id)}">活動場所を自由入力<input data-field="place" data-id="${esc(e.id)}" maxlength="100" placeholder="活動場所を入力" value="${esc(e.place||'')}"></label><label class="wide" style="flex-direction:row;align-items:center"><input type="checkbox" data-field="allDay" data-id="${esc(e.id)}" ${e.allDay?"checked":""} style="width:auto"> 終日</label><label>開始<input type="time" data-field="start" data-id="${esc(e.id)}" value="${esc(e.start)}" ${e.allDay?"disabled":""}></label><label>終了<input type="time" data-field="end" data-id="${esc(e.id)}" value="${esc(e.end)}" ${e.allDay?"disabled":""}></label></div><div class="row"><button type="button" class="danger" data-delete-event="${esc(e.id)}">この予定を削除</button></div><p class="small muted">出欠は本人のみ変更可能。予定の編集・削除は管理者のみ可能。</p>`:'<p class="small muted">出欠はいつでも本人だけが変更できます。</p>'}</div></details>`:'<p class="small muted">過去の活動のため、出欠・予定は編集できません。</p>'}</div></details></article>`}
 const shiftMonth=(month,delta)=>{const [y,m]=month.split('-').map(Number);const d=new Date(y,m-1+delta,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
 function currentPastMonth(){return pastYear&&pastMonth?pastYear+'-'+pastMonth:today().slice(0,7)}
 async function loadPastMonth(){
@@ -316,6 +409,8 @@ const parentScheduleRef=id=>doc(db,'parentSchedules',id);
 const publicInstructorRef=(id,uid)=>doc(db,'parentSchedules',id,'instructors',uid);
 function publicInstructorData(m){return {name:m.name||'名前未設定',photoURL:/^https:\/\/[a-z0-9.-]+\.googleusercontent\.com\//i.test(m.photoURL||'')?m.photoURL:''}}
 async function publishOwnAttendance(eventId,value){
+  const existing=await getDoc(doc(db,'events',eventId));
+  if(!existing.exists()||(existing.data().date<today()&&profile?.role!=='admin'))throw new Error('過去の活動の出欠は変更できません。');
   // Atomic writes avoid the transaction's server-side pre-read. Firestore rules
   // still verify ownership, event existence and the public projection.
   const batch=writeBatch(db);
@@ -330,6 +425,8 @@ async function publishOwnAttendance(eventId,value){
   }
 }
 async function updateEventWithSchedule(id,changes){
+  const existing=await getDoc(doc(db,'events',id));
+  if(!existing.exists()||(existing.data().date<today()&&profile?.role!=='admin'))throw new Error('過去の活動は編集できません。');
   await runTransaction(db,async tx=>{
     const ref=doc(db,'events',id),pub=parentScheduleRef(id);
     const event=await tx.get(ref),schedule=await tx.get(pub);
@@ -476,7 +573,7 @@ function renderDeleteManager(){
 async function executeBulkDelete(){
   if(profile?.role!=='admin'||!deleteConfirm||deleteBusy)return;
   const targets=[...events,...deleteHistory].filter(e=>deleteSelection.has(e.id));if(!targets.length)return;
-  if(!confirm(targets.length+'件の予定と全員の出欠回答を完全に削除します。\\n元に戻せません。実行しますか？'))return;
+  if(!confirm(targets.length+'件の予定と全員の出欠回答を完全に削除します。\n元に戻せません。実行しますか？'))return;
   deleteBusy=true;setLoading('bulkDelete',true,'予定と出欠回答を削除処理中です…');renderDeleteManager();
   let done=0;const errors=[];
   // Optimize only deletion. Keep the proven login and Firestore listeners unchanged.
@@ -517,7 +614,37 @@ async function executeBulkDelete(){
     else notify(done+'件の予定と出欠回答を削除しました');
   }finally{deleteBusy=false;setLoading('bulkDelete',false);render();}
 }
-function render(){if(!profile||!me)return;const parent=profile.role==='parent';if(parent&&tab!=='future')tab='future';let ts=today(),sorted=[...events].sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start));let future=sorted.filter(e=>profile.role==='parent'?e.dateAt?.toMillis()>Date.now():e.date>=ts),past=sorted.filter(e=>e.date<ts).reverse();for(let t of ['future','bulk','create','past','members','deleteManager']){$(t).classList.toggle('hidden',t!==tab||(parent&&t!=='future'));document.querySelector(`[data-tab="${t}"]`)?.classList.toggle('active',t===tab);document.querySelector(`[data-tab="${t}"]`)?.setAttribute('aria-current',t===tab?'page':'false')}document.querySelectorAll('.tabs [data-tab]').forEach(el=>el.classList.toggle('hidden',parent&&el.dataset.tab!=='future'));document.querySelector('.tabs').classList.toggle('hidden',parent);$('membersTab').classList.toggle('hidden',profile.role!=='admin');$('deleteManagerTab').classList.toggle('hidden',profile.role!=='admin');document.querySelector('.tabs')?.classList.toggle('member-only-tabs',profile.role!=='admin');if(profile.role!=='admin'&&(tab==='members'||tab==='deleteManager')){tab='future';return render()}renderFuture(future);if(parent){$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('myname').classList.add('hidden');$('parentLogout').classList.remove('hidden');return}$('parentLogout').classList.add('hidden');$('myname').classList.remove('hidden');renderUnanswered(future);if(tab==='past')renderPast();if(profile.role==='admin'&&tab==='deleteManager')renderDeleteManager();$('bulk').innerHTML=`<div class="card"><h3>${esc(profile.name)}の出欠をまとめて回答</h3><p class="muted">○・△・×をタップして選択し、最後に「まとめて保存」を押してください。</p>${future.map(e=>`<div class="bulk-entry"><div class="bulk-info"><strong class="${dateColorClass(e.date)}">${dateLabel(e.date)}</strong><span class="small">${e.allDay?"終日":esc(e.start)} ${esc(e.kind||"通常活動")}・${esc(e.place)}</span></div><div class="bulk-options" role="radiogroup" aria-label="${esc(e.date)}の出欠">${['○','△','×'].map(v=>`<label class="bulk-choice"><input type="radio" class="bulk-answer" name="bulk-${esc(e.id)}" data-id="${esc(e.id)}" value="${v}" ${v===(bulkDrafts.has(e.id)?bulkDrafts.get(e.id):e.answers?.[me.uid])?'checked':''}><span>${v}</span></label>`).join('')}</div></div>`).join('')}<div class="row"><button class="primary" id="savebulk">まとめて保存</button></div></div>`;$('savebulk').onclick=async()=>{if(profile?.role==='parent')return;const entries=[...document.querySelectorAll('.bulk-answer:checked')];const btn=$('savebulk');btn.disabled=true;try{
+let parentPushSettingsOpen=false,parentPushUiRequest=0,parentPushWorkerUpdateChecked=false;
+const staffPushRegisteredKey=uid=>'kids-staff-push-registered:'+uid;
+// A successful device subscription persists between sign-ins; allow reopening from the small settings button.
+async function syncParentPushUI(){
+  const panel=$('parentPushTest'),settings=$('parentPushSettingsButton');
+  const role=profile?.role;
+  if(!isPreviewPushRole(role)||!me){panel.classList.add('hidden');settings.classList.add('hidden');return}
+  const uid=me.uid,request=++parentPushUiRequest;
+  const staff=isStaffPushRole(role);
+  $('previewPushTitle').textContent=staff?'🔔 スタッフ通知':'🔔 通知設定';
+  $('previewPushDescription').textContent=staff?'この端末をスタッフ通知の受信先として登録します。':'iPhoneはSafariからホーム画面に追加して起動してください。AndroidはChromeで開いてください。各端末で同じ保護者アカウントにログインして登録します。通知の許可はこの端末で1回だけ必要です。';
+  panel.classList.add('hidden');
+  let registered=false;
+  try{
+    if(typeof Notification!=='undefined'&&Notification.permission==='granted'&&'serviceWorker' in navigator){
+      const registration=await navigator.serviceWorker.getRegistration(new URL('./kids_attendance_v2.html',location.href));
+      if(registration&&!parentPushWorkerUpdateChecked){
+        parentPushWorkerUpdateChecked=true;
+        registration.update().catch(error=>console.warn('Notification worker update failed',error));
+      }
+      const subscription=await registration?.pushManager?.getSubscription();
+      registered=!!subscription && !!registration?.active?.scriptURL?.endsWith('/push-test-sw.js');
+      if(staff)registered=registered&&localStorage.getItem(staffPushRegisteredKey(uid))==='1';
+    }
+  }catch(error){console.warn('Could not check push subscription',error)}
+  if(request!==parentPushUiRequest||me?.uid!==uid||profile?.role!==role)return;
+  panel.classList.toggle('hidden',registered&&!parentPushSettingsOpen);
+  settings.classList.toggle('hidden',!registered);
+}
+$('parentPushSettingsButton').onclick=()=>{parentPushSettingsOpen=!parentPushSettingsOpen;syncParentPushUI()};
+function render(){if(!profile||!me)return;const parent=profile.role==='parent';if(isPreviewPushRole(profile.role)){syncParentPushUI();clearParentBadge()}else{$('parentPushTest').classList.add('hidden');$('parentPushSettingsButton').classList.add('hidden')};if(parent&&tab!=='future')tab='future';let ts=today(),sorted=[...events].sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start));let future=sorted.filter(e=>profile.role==='parent'?e.dateAt?.toMillis()>Date.now():e.date>=ts),past=sorted.filter(e=>e.date<ts).reverse();for(let t of ['future','bulk','create','past','members','deleteManager']){$(t).classList.toggle('hidden',t!==tab||(parent&&t!=='future'));document.querySelector(`[data-tab="${t}"]`)?.classList.toggle('active',t===tab);document.querySelector(`[data-tab="${t}"]`)?.setAttribute('aria-current',t===tab?'page':'false')}document.querySelectorAll('.tabs [data-tab]').forEach(el=>el.classList.toggle('hidden',parent&&el.dataset.tab!=='future'));document.querySelector('.tabs').classList.toggle('hidden',parent);$('membersTab').classList.toggle('hidden',profile.role!=='admin');$('deleteManagerTab').classList.toggle('hidden',profile.role!=='admin');document.querySelector('.tabs')?.classList.toggle('member-only-tabs',profile.role!=='admin');if(profile.role!=='admin'&&(tab==='members'||tab==='deleteManager')){tab='future';return render()}renderFuture(future);if(parent){$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('myname').classList.add('hidden');$('parentLogout').classList.remove('hidden');return}$('parentLogout').classList.add('hidden');$('myname').classList.remove('hidden');renderUnanswered(future);if(tab==='past')renderPast();if(profile.role==='admin'&&tab==='deleteManager')renderDeleteManager();$('bulk').innerHTML=`<div class="card"><h3>${esc(profile.name)}の出欠をまとめて回答</h3><p class="muted">○・△・×をタップして選択し、最後に「まとめて保存」を押してください。</p>${future.map(e=>`<div class="bulk-entry"><div class="bulk-info"><strong class="${dateColorClass(e.date)}">${dateLabel(e.date)}</strong><span class="small">${e.allDay?"終日":esc(e.start)} ${esc(e.kind||"通常活動")}・${esc(e.place)}</span></div><div class="bulk-options" role="radiogroup" aria-label="${esc(e.date)}の出欠">${['○','△','×'].map(v=>`<label class="bulk-choice"><input type="radio" class="bulk-answer" name="bulk-${esc(e.id)}" data-id="${esc(e.id)}" value="${v}" ${v===(bulkDrafts.has(e.id)?bulkDrafts.get(e.id):e.answers?.[me.uid])?'checked':''}><span>${v}</span></label>`).join('')}</div></div>`).join('')}<div class="row"><button class="primary" id="savebulk">まとめて保存</button></div></div>`;$('savebulk').onclick=async()=>{if(profile?.role==='parent')return;const entries=[...document.querySelectorAll('.bulk-answer:checked')];const btn=$('savebulk');btn.disabled=true;try{
   const pending=entries.filter(el=>events.find(e=>e.id===el.dataset.id)?.answers?.[me.uid]!==el.value);
   if(!pending.length){notify('変更が必要な出欠回答はありません');return}
   let saved=0;
@@ -569,14 +696,14 @@ unsubs.push(onSnapshot(query(collection(db,'events'),where('date','>=',today()))
 
 function showPending(){$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('app').classList.add('hidden');$('pending').classList.remove('hidden');$('uid').textContent=me.uid;$('authstate').textContent='承認待ち';$('mynamehint').textContent=myPendingName?'登録名：'+myPendingName+'（承認を待っています）':'先に表示名を登録してください。';}
 $('login').onclick=async()=>{try{await signInWithPopup(auth,provider)}catch(e){if(e.code==='auth/popup-blocked'){await signInWithRedirect(auth,provider)}else{alert('ログインに失敗しました：'+e.message)}}};$('logout').onclick=()=>signOut(auth);$('parentLogoutButton').onclick=()=>signOut(auth);$('copyuid').onclick=()=>navigator.clipboard.writeText(me.uid).then(()=>alert('コピーしました')).catch(()=>alert('コピーできない場合は表示されたIDを選択してください'));
-onAuthStateChanged(auth,async user=>{clean();me=user;$('login').classList.toggle('hidden',!!user);$('logout').classList.toggle('hidden',!user);const avatar=$('authavatar');const url=user?.photoURL||'';const safe=/^https:\/\/(?:lh[0-9]+\.googleusercontent\.com|[a-z0-9.-]+\.googleusercontent\.com)\//i.test(url);avatar.classList.toggle('hidden',!safe);avatar.onerror=()=>avatar.classList.add('hidden');if(safe)avatar.src=url;else avatar.removeAttribute('src');if(!user){$('parentLogout').classList.add('hidden');setLoading('startup',false);$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('myname').classList.add('hidden');$('authstate').textContent='ログインしてください';$('app').classList.add('hidden');$('pending').classList.add('hidden');return}try{$('myname').classList.remove('hidden');const nameSnap=await getDoc(doc(db,'userProfiles',user.uid)).catch(e=>{if(e.code==='permission-denied')return {exists:()=>false};throw e});myPendingName=nameSnap.exists()?nameSnap.data().name||'':'';$('mynameinput').value=myPendingName;await watch();if(user.photoURL&&profile&&profile.role!=='parent'&&profile.photoURL!==user.photoURL){try{await updateDoc(doc(db,'members',user.uid),{photoURL:user.photoURL})}catch(err){console.warn('プロフィール画像の保存にはFirestoreルールの更新が必要です',err)}}}catch(e){setLoading('startup',false);showPending();console.error(e);$('mynamehint').textContent='プロフィールを読み込めません。Firestoreルールを確認してください。'}});getRedirectResult(auth).catch(console.error);
+onAuthStateChanged(auth,async user=>{clean();me=user;$('login').classList.toggle('hidden',!!user);$('logout').classList.toggle('hidden',!user);const avatar=$('authavatar');const url=user?.photoURL||'';const safe=/^https:\/\/(?:lh[0-9]+\.googleusercontent\.com|[a-z0-9.-]+\.googleusercontent\.com)\//i.test(url);avatar.classList.toggle('hidden',!safe);avatar.onerror=()=>avatar.classList.add('hidden');if(safe)avatar.src=url;else avatar.removeAttribute('src');if(!user){$('parentLogout').classList.add('hidden');setLoading('startup',false);$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('myname').classList.add('hidden');$('authstate').textContent='ログインしてください';$('app').classList.add('hidden');$('pending').classList.add('hidden');return}try{$('myname').classList.remove('hidden');const nameSnap=await getDoc(doc(db,'userProfiles',user.uid)).catch(e=>{if(e.code==='permission-denied')return {exists:()=>false};throw e});myPendingName=nameSnap.exists()?nameSnap.data().name||'':'';$('mynameinput').value=myPendingName;await watch();}catch(e){setLoading('startup',false);showPending();console.error(e);$('mynamehint').textContent='プロフィールを読み込めません。Firestoreルールを確認してください。'}});getRedirectResult(auth).catch(console.error);
 $('refreshLogo').addEventListener('click',()=>window.location.reload());
 document.addEventListener('click',async ev=>{let b=ev.target.closest('button');if(!b||!profile)return;if(b.dataset.openEvent){
   const selectedEvent=events.find(e=>e.id===b.dataset.openEvent);
   if(!selectedEvent||selectedEvent.date<today())return;
   futureMonth=selectedEvent.date.slice(0,7);
   tab='future';render();
-  const target=[...document.querySelectorAll('#future [data-event-id]')].find(el=>el.dataset.eventId===b.dataset.openEvent);if(target){const details=target.querySelector('details');if(details)details.open=true;target.scrollIntoView({behavior:'smooth',block:'start'})}return}if(b.dataset.tab){if(profile.role==='parent'&&b.dataset.tab!=='future')return;if((b.dataset.tab==='members'||b.dataset.tab==='deleteManager')&&profile.role!=='admin')return;tab=b.dataset.tab;render();if(tab==='past'&&pastLoadedMonth!==currentPastMonth())loadPastMonth();if(tab==='deleteManager'&&deletePeriod!=='future'&&!deleteHistoryLoaded)loadDeleteHistory();return}if(b.dataset.deleteEvent&&profile.role==='admin'){const id=b.dataset.deleteEvent;const event=[...events,...pastEvents,...deleteHistory].find(e=>e.id===id);if(!event)return;const title=`${event.date} ${event.kind||'通常活動'}（${event.place}）`;if(!confirm(`${title} を削除しますか？\nこの予定と全員の出欠回答が削除され、元に戻せません。`))return;b.disabled=true;try{const answers=await getDocs(collection(db,'events',id,'answers'));const publicPeople=await getDocs(collection(db,'parentSchedules',id,'instructors'));const batch=writeBatch(db);answers.docs.forEach(d=>batch.delete(d.ref));publicPeople.docs.forEach(d=>batch.delete(d.ref));batch.delete(parentScheduleRef(id));batch.delete(doc(db,'events',id));await batch.commit();bulkDrafts.delete(id);pastEvents=pastEvents.filter(e=>e.id!==id);deleteHistory=deleteHistory.filter(e=>e.id!==id);if(tab==='past')renderPast();notify('予定を削除しました')}catch(e){fail(e);b.disabled=false}return}if(b.dataset.answer&&profile.role!=='parent'){try{await publishOwnAttendance(b.dataset.answer,b.dataset.value)}catch(e){fail(e)}}if(b.dataset.remove&&profile.role==='admin'){
+  const target=[...document.querySelectorAll('#future [data-event-id]')].find(el=>el.dataset.eventId===b.dataset.openEvent);if(target){const details=target.querySelector('details');if(details)details.open=true;target.scrollIntoView({behavior:'smooth',block:'start'})}return}if(b.dataset.tab){if(profile.role==='parent'&&b.dataset.tab!=='future')return;if((b.dataset.tab==='members'||b.dataset.tab==='deleteManager')&&profile.role!=='admin')return;tab=b.dataset.tab;render();if(tab==='past'&&pastLoadedMonth!==currentPastMonth())loadPastMonth();if(tab==='deleteManager'&&deletePeriod!=='future'&&!deleteHistoryLoaded)loadDeleteHistory();return}if(b.dataset.deleteEvent&&profile.role==='admin'){const id=b.dataset.deleteEvent;const event=[...events,...pastEvents,...deleteHistory].find(e=>e.id===id);if(!event)return;if(event.date<today()&&profile.role!=='admin'){notify('過去の活動は削除できません');return;}const title=`${event.date} ${event.kind||'通常活動'}（${event.place}）`;if(!confirm(`${title} を削除しますか？\nこの予定と全員の出欠回答が削除され、元に戻せません。`))return;b.disabled=true;try{const answers=await getDocs(collection(db,'events',id,'answers'));const publicPeople=await getDocs(collection(db,'parentSchedules',id,'instructors'));const batch=writeBatch(db);answers.docs.forEach(d=>batch.delete(d.ref));publicPeople.docs.forEach(d=>batch.delete(d.ref));batch.delete(parentScheduleRef(id));batch.delete(doc(db,'events',id));await batch.commit();bulkDrafts.delete(id);pastEvents=pastEvents.filter(e=>e.id!==id);deleteHistory=deleteHistory.filter(e=>e.id!==id);if(tab==='past')renderPast();notify('予定を削除しました')}catch(e){fail(e);b.disabled=false}return}if(b.dataset.answer&&profile.role!=='parent'){try{await publishOwnAttendance(b.dataset.answer,b.dataset.value)}catch(e){fail(e)}}if(b.dataset.remove&&profile.role==='admin'){
   const departing=members.find(m=>m.id===b.dataset.remove);
   if(!departing)return;
   if(!confirm(`${departing.name}さんの承認を取り消しますか？\n過去の活動には名前・出欠を残し、今後の活動からは表示を外します。`))return;
@@ -680,6 +807,65 @@ document.querySelectorAll('input[name="kindPreset"]').forEach(el=>el.addEventLis
 $('add').onclick=async()=>{if(!profile||profile.role==='parent')return;const dates=[...selectedDates];const chosenKind=document.querySelector('input[name="kindPreset"]:checked')?.value||'通常活動';const kind=chosenKind==='other'?$('customKind').value.trim():chosenKind;updateTimePreset();if(!dates.length){alert('カレンダーから日付を選択してください');return}if(!kind){alert('イベント名を入力してください');return}const selectedPlace=document.querySelector('input[name="placePreset"]:checked')?.value||'里山';const place=selectedPlace==='自由入力'?$('customPlace').value.trim():selectedPlace;if(!place){alert('活動場所を入力してください');return}try{await Promise.all(dates.map(async date=>{const event={date,start:$('start').value,end:$('end').value,place,kind,allDay:$('allDay').checked,createdBy:me.uid,createdAt:serverTimestamp()};const ref=doc(collection(db,'events')),batch=writeBatch(db);batch.set(ref,event);batch.set(parentScheduleRef(ref.id),scheduleData(event));await batch.commit()}));selectedDates.clear();redrawDates();notify('予定を登録しました');render();window.scrollTo({top:0,behavior:'smooth'})}catch(e){fail(e)}};
 
 $('savemyname').onclick=async()=>{if(!me||profile?.role==='parent')return;const name=$('mynameinput').value.trim();if(!name||name.length>30){alert('表示名を1〜30文字で入力してください');return}const btn=$('savemyname');btn.disabled=true;try{await setDoc(doc(db,'userProfiles',me.uid),{name,updatedAt:serverTimestamp()});myPendingName=name;if(profile){await updateDoc(doc(db,'members',me.uid),{name});profile.name=name;$('authstate').textContent='ログイン中：'+name;render()}else{$('mynamehint').textContent='登録名：'+name+'（承認を待っています）'}alert('表示名を保存しました')}catch(e){console.error(e);alert('名前を保存できませんでした。Firestoreルールを確認してください。\n'+e.message)}finally{btn.disabled=false}};
+$('enableParentPush').onclick=async()=>{
+  const role=profile?.role;
+  if(!isPreviewPushRole(role))return;
+  const staff=isStaffPushRole(role),uid=me?.uid;
+  const workerUrl=staff?STAFF_PREVIEW_WORKER_URL:PUSH_TEST_WORKER_URL;
+  const btn=$('enableParentPush'),result=$('parentPushStatus');
+  btn.disabled=true;result.textContent='通知の設定を確認しています…';
+  let stage='端末の対応状況';
+  try{
+    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+    if(isIOS&&!window.matchMedia('(display-mode: standalone)').matches&&!window.navigator.standalone){
+      throw new Error('iPhoneでは、Safariの「ホーム画面に追加」から作った「キッズ出欠」アイコンで開いてください。');
+    }
+    if(!('Notification' in window)||!('serviceWorker' in navigator)||!('PushManager' in window)){
+      throw new Error('この端末・ブラウザではWebプッシュ通知に対応していません。');
+    }
+    if(!workerUrl)throw new Error('Cloudflare WorkerのURLが未設定です。');
+    if(!PUSH_TEST_VAPID_KEY){
+      throw new Error('Firebaseの公開VAPIDキーがまだ設定されていません。管理者側の設定が必要です。');
+    }
+    stage='通知の許可';result.textContent='① 通知の許可を確認中…';
+    const permission=await Notification.requestPermission();
+    if(permission!=='granted')throw new Error('通知が許可されていません。端末・ブラウザの設定から通知を許可してください。');
+    stage='Firebase通知の対応状況';result.textContent='② 通知機能を確認中…';
+    if(!await isMessagingSupported())throw new Error('このブラウザではFirebaseのWebプッシュ通知を利用できません。');
+    stage='通知用Service Workerの登録';result.textContent='③ 通知の受信機能を準備中…';
+    const worker=await navigator.serviceWorker.register('./push-test-sw.js',{scope:'./kids_attendance_v2.html'});
+    stage='Firebase通知トークンの取得';result.textContent='④ 通知用の端末情報を取得中…';
+    const token=await getToken(getMessaging(app),{vapidKey:PUSH_TEST_VAPID_KEY,serviceWorkerRegistration:worker});
+    if(!token)throw new Error('通知用の登録情報を取得できませんでした。');
+    stage='Cloudflareへの端末登録';result.textContent='⑤ 通知先を登録中…';
+    if(me?.uid!==uid||profile?.role!==role)throw new Error('ログイン中のアカウントが変わりました。');
+    await pushTestRequest('/register',{token},workerUrl);
+    if(staff)localStorage.setItem(staffPushRegisteredKey(uid),'1');
+    result.textContent='✓ 通知の受信準備ができました！管理者からテスト通知を送ってもらってください。';
+    parentPushSettingsOpen=false;
+    await syncParentPushUI();
+  }catch(error){console.error('Parent push registration failed at '+stage,error);result.textContent='設定できませんでした（'+stage+'）：'+(error?.message||String(error))}
+  finally{btn.disabled=false}
+};
+
+$('staffNoticeTestButton').onclick=()=>sendPreviewNotice(true);
+async function sendPreviewNotice(staff){
+  if(profile?.role!=='admin')return;
+  const buttonId=staff?'staffNoticeTestButton':'noticeTestButton';
+  const resultId=staff?'staffNoticeTestResult':'noticeTestResult';
+  if(!staff||!window.confirm('【スタッフ全員への通知】\n\n通知登録済みの講師・管理者の端末へ「活動予定を追加しました。」を送信します。\n送信しますか？'))return;
+  const btn=$(buttonId),result=$(resultId);
+  const recipient=staff?'staff':'parent';
+  btn.disabled=true;result.hidden=false;result.textContent=(staff?'スタッフ':'保護者')+'へテスト通知を送信しています…';
+  try{
+    noticeRequestIds[recipient] ||= crypto.randomUUID();
+    const d=await pushTestRequest('/send',{requestId:noticeRequestIds[recipient]},staff?STAFF_PREVIEW_WORKER_URL:PUSH_TEST_WORKER_URL);
+    noticeRequestIds[recipient]=null;
+    result.textContent=d.sent>0?'✓ '+d.sent+'台に送信しました。各端末の通知を確認してください。':(d.message||'送信できませんでした。受信側の通知登録を確認してください。');
+    if(d.failed)result.textContent+='（送信失敗：'+d.failed+'件）';
+  }catch(error){console.error('Parent push send failed',error);result.textContent='送信できませんでした：'+(error?.message||String(error))+'。Cloudflare Workerの設定と各端末の受信状況を確認してください。再試行では同じ送信IDを使用します。'}
+  finally{btn.disabled=false}
+}
 $('addmember').onclick=async()=>{if(profile?.role!=='admin')return;const uid=$('memberuid').value.trim();if(!uid){alert('ユーザーIDを入力してください');return}if(members.some(m=>m.id===uid)){alert('この人はすでに登録済みです');return}if(members.length>=10){alert('メンバーは10人までです');return}try{const nameSnap=await getDoc(doc(db,'userProfiles',uid));const name=nameSnap.exists()?nameSnap.data().name?.trim():'';if(!name){alert('相手の名前が未登録です。本人に名前を保存してもらってください');return}const approval=writeBatch(db);approval.set(doc(db,'members',uid),{name,role:'member',order:members.length});approval.set(doc(db,'accessStatus',uid),{role:'member'});await approval.commit();$('memberuid').value='';notify(name+'さんを承認しました。相手にページを再読み込みしてもらってください')}catch(e){fail(e)}};
 
 </script></body></html>
