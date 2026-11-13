@@ -1,8 +1,8 @@
 {
-  "id": "./staff_integrated_preview.html",
+  "id": "./staff_integrated_preview",
   "name": "キッズ出欠・スタッフ通知テスト",
   "short_name": "スタッフ通知",
-  "start_url": "./staff_integrated_preview.html",
+  "start_url": "./staff_integrated_preview",
   "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
