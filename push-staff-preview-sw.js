@@ -32,13 +32,13 @@ messaging.onBackgroundMessage(payload=>{
     tag:'kids-staff-push-'+Date.now(),
     renotify:false,
     silent:false,
-    data:{url:'./staff_integrated_preview.html'}
+    data:{url:'./staff_integrated_preview'}
   });
   return Promise.all([badge,notification]);
 });
 self.addEventListener('notificationclick',event=>{
   event.notification.close();
-  const url=new URL('./staff_integrated_preview.html',self.location.href).href;
+  const url=new URL('./staff_integrated_preview',self.location.href).href;
   event.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(clients=>{
     const match=clients.find(client=>client.url.startsWith(url.split('?')[0]));
     if(match)return match.focus();
