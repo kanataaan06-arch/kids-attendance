@@ -191,7 +191,7 @@ button,select,input{font:inherit;border:1px solid #cdd4df;border-radius:9px;padd
 <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-label="読み込み中"><img class="loading-logo" src="./icon-192.png" alt=""><div class="loading-spinner" aria-hidden="true"></div><span id="loadingText">読み込み中です…</span></div>
 <header><div class="site-brand"><button type="button" id="refreshLogo" class="brand-refresh" title="画面を更新" aria-label="ロゴを押して画面を更新"><img src="./icon-192.png" alt="" width="46" height="46"></button><h1>キッズ講師 - 出欠管理 <span class="preview-label">表示比較版</span></h1></div></header><main>
 <div class="preview-warning" role="note"><strong>🧪 本番と同じデータを使う表示比較版です</strong>○の人のアイコンだけを一覧表示し、タップすると出欠詳細や編集画面が開きます。<b>ログイン・回答・予定登録・編集・削除は本番と共通で、保存すると本番にも反映されます。</b> 比較だけなら保存操作はしないでください。 <a href="./kids_attendance_v2.html">通常版に戻る</a></div>
-<div id="auth" class="card"><div class="auth-header"><img id="authavatar" class="auth-avatar hidden" alt="Googleプロフィール画像" referrerpolicy="no-referrer"><strong id="authstate">ログインしてください</strong><div id="parentLogout" class="hidden"><button type="button" id="parentPushSettingsButton" class="hidden">🔔 通知設定</button> <button type="button" id="parentLogoutButton">ログアウト</button></div></div><div class="authbar"><button id="login" class="primary">Googleでログイン</button></div><div id="parentPushTest" class="parent-push-test hidden"><h4>🔔 通知テスト（保護者専用）</h4><p>iPhoneはSafariからホーム画面に追加して起動してください。AndroidはChromeで開いてください。各端末で同じ保護者アカウントにログインして登録します。通知の許可はこの端末で1回だけ必要です。</p><button id="enableParentPush" type="button" class="primary">この端末で通知を受け取る</button><p id="parentPushStatus" class="push-status" role="status" aria-live="polite"></p><button id="testParentBadge" type="button" style="margin-top:10px;background:#fff;color:#2455a3;border:1px solid #bcd5f3">iPhoneのバッジだけ試す（1を表示）</button><p id="parentBadgeStatus" class="push-status" role="status" aria-live="polite"></p></div><details id="unansweredAlert" class="hidden unanswered-alert"><summary id="unansweredSummary"></summary><div id="unansweredList" class="unanswered-list"></div></details><details id="myname" class="hidden profile-details"><summary>表示名を変更する</summary><div class="row"><label for="mynameinput">自分の表示名</label><input id="mynameinput" maxlength="30" placeholder="例：かなこ"><button id="savemyname">名前を保存</button></div><p id="mynamehint" class="muted"></p><div class="profile-logout"><button id="logout" class="hidden" type="button">ログアウト</button></div></details><div id="pending" class="hidden notice"><strong>承認待ちです</strong><p>管理者に登録してもらうまで予定は表示されません。</p><div class="uid" id="uid"></div><button id="copyuid">ユーザーIDをコピー</button></div></div>
+<div id="auth" class="card"><div class="auth-header"><img id="authavatar" class="auth-avatar hidden" alt="Googleプロフィール画像" referrerpolicy="no-referrer"><strong id="authstate">ログインしてください</strong><div id="parentLogout" class="hidden"><button type="button" id="parentPushSettingsButton" class="hidden">🔔 通知設定</button> <button type="button" id="parentLogoutButton">ログアウト</button></div></div><div class="authbar"><button id="login" class="primary">Googleでログイン</button></div><div id="parentPushTest" class="parent-push-test hidden"><h4 id="previewPushTitle">🔔 通知テスト（保護者専用）</h4><p id="previewPushDescription">iPhoneはSafariからホーム画面に追加して起動してください。AndroidはChromeで開いてください。各端末で同じ保護者アカウントにログインして登録します。通知の許可はこの端末で1回だけ必要です。</p><button id="enableParentPush" type="button" class="primary">この端末で通知を受け取る</button><p id="parentPushStatus" class="push-status" role="status" aria-live="polite"></p><button id="testParentBadge" type="button" style="margin-top:10px;background:#fff;color:#2455a3;border:1px solid #bcd5f3">iPhoneのバッジだけ試す（1を表示）</button><p id="parentBadgeStatus" class="push-status" role="status" aria-live="polite"></p></div><details id="unansweredAlert" class="hidden unanswered-alert"><summary id="unansweredSummary"></summary><div id="unansweredList" class="unanswered-list"></div></details><details id="myname" class="hidden profile-details"><summary>表示名を変更する</summary><div class="row"><label for="mynameinput">自分の表示名</label><input id="mynameinput" maxlength="30" placeholder="例：かなこ"><button id="savemyname">名前を保存</button></div><p id="mynamehint" class="muted"></p><div class="profile-logout"><button id="logout" class="hidden" type="button">ログアウト</button></div></details><div id="pending" class="hidden notice"><strong>承認待ちです</strong><p>管理者に登録してもらうまで予定は表示されません。</p><div class="uid" id="uid"></div><button id="copyuid">ユーザーIDをコピー</button></div></div>
 <div id="app" class="hidden"><nav class="tabs" aria-label="画面の切り替え">
 <button type="button" data-tab="future" class="active"><span class="tab-icon" aria-hidden="true">📅</span><span class="tab-label">今後の活動</span></button>
 <button type="button" data-tab="bulk"><span class="tab-icon" aria-hidden="true">✅</span><span class="tab-label">まとめて回答</span></button>
@@ -209,7 +209,7 @@ button,select,input{font:inherit;border:1px solid #cdd4df;border-radius:9px;padd
 <label class="time-choice"><input type="radio" name="timePreset" value="custom"><span>自由入力</span></label>
 </div><input id="allDay" type="checkbox" class="hidden" aria-hidden="true" tabindex="-1"></div>
 <div id="customTimes" class="wide hidden"><div class="fields"><label>🟢 開始時間<input id="start" type="time" value="09:00"></label><label>🔴 終了時間<input id="end" type="time" value="18:00"></label></div></div><div class="wide"><div class="time-title">📍 活動場所</div><div class="time-options" role="radiogroup" aria-label="活動場所"><label class="time-choice"><input type="radio" name="placePreset" value="里山" checked><span>里山</span></label><label class="time-choice"><input type="radio" name="placePreset" value="ドラマ" ><span>ドラマ</span></label><label class="time-choice"><input type="radio" name="placePreset" value="マルチ" ><span>マルチ</span></label><label class="time-choice"><input type="radio" name="placePreset" value="パフォ" ><span>パフォ</span></label><label class="time-choice"><input type="radio" name="placePreset" value="研修室" ><span>研修室</span></label><label class="time-choice"><input type="radio" name="placePreset" value="自由入力" ><span>自由入力</span></label></div></div><label id="customPlaceLabel" class="wide hidden">✏️ 活動場所を入力<input id="customPlace" maxlength="100" placeholder="活動場所を入力してください"></label></div><p><button class="primary" id="add">まとめて登録する</button></p></div></section>
-<section id="past" class="hidden"></section><section id="deleteManager" class="hidden"></section><section id="members" class="hidden"><div class="card"><div class="member-heading"><h3>👥 メンバーの管理</h3><span id="memberCount" class="member-count">0 / 10人</span></div><p class="muted">登録中の講師と権限を確認できます。</p><div class="notice-test-panel" id="noticeTestPanel"><h4>📢 活動予定のお知らせ（テスト版）</h4><p>予定の追加・変更が終わったら、登録済み端末へまとめて知らせるためのボタンです。</p><p><strong>保護者のみへ送信するテストです。</strong> 指定した夫の保護者アカウントで登録した全端末に1件ずつ送ります。講師には送りません。Cloudflare Workerの設定完了後に使えます。</p><button type="button" id="noticeTestButton" class="primary">📢 保護者にテスト通知を送る</button><p id="noticeTestResult" class="notice-test-result" role="status" aria-live="polite" hidden></p></div><div id="memberlist"></div><div class="member-add"><h3>➕ 新しいメンバーを承認</h3><p class="muted">相手が一度Googleログインして表示されたユーザーIDを入力してください。</p><label>ユーザーID（UID）<input id="memberuid" placeholder="相手が送ってくれたユーザーID"></label><p class="small muted">表示名は本人が登録します。</p><button id="addmember" class="primary">メンバーを承認する</button></div></div></section></div>
+<section id="past" class="hidden"></section><section id="deleteManager" class="hidden"></section><section id="members" class="hidden"><div class="card"><div class="member-heading"><h3>👥 メンバーの管理</h3><span id="memberCount" class="member-count">0 / 10人</span></div><p class="muted">登録中の講師と権限を確認できます。</p><div class="notice-test-panel" id="noticeTestPanel"><h4>📢 活動予定のお知らせ（テスト版）</h4><p>予定の追加・変更が終わったら、登録済み端末へまとめて知らせるためのボタンです。</p><p><strong>保護者のみへ送信するテストです。</strong> 指定した夫の保護者アカウントで登録した全端末に1件ずつ送ります。講師には送りません。Cloudflare Workerの設定完了後に使えます。</p><button type="button" id="noticeTestButton" class="primary">📢 保護者にテスト通知を送る</button><p id="noticeTestResult" class="notice-test-result" role="status" aria-live="polite" hidden></p></div><div class="notice-test-panel"><h4>📢 スタッフ通知テスト</h4><p>通知を登録した講師・管理者の端末に送信します。</p><button type="button" id="staffNoticeTestButton" class="primary">📢 スタッフにテスト通知を送る</button><p id="staffNoticeTestResult" class="notice-test-result" role="status" aria-live="polite" hidden></p></div><div id="memberlist"></div><div class="member-add"><h3>➕ 新しいメンバーを承認</h3><p class="muted">相手が一度Googleログインして表示されたユーザーIDを入力してください。</p><label>ユーザーID（UID）<input id="memberuid" placeholder="相手が送ってくれたユーザーID"></label><p class="small muted">表示名は本人が登録します。</p><button id="addmember" class="primary">メンバーを承認する</button></div></div></section></div>
 </main>
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
@@ -221,19 +221,22 @@ const firebaseConfig={apiKey:'AIzaSyCbE1BqIxMGke2vT4FcyZKWLqQX6YmzEsU',authDomai
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();
 // Test preview only: always offer Google account selection (e.g. parent's account on shared Android).
 provider.setCustomParameters({prompt:'select_account'});
-async function pushTestRequest(path,data){
-  if(!PUSH_TEST_WORKER_URL||!/^https:\/\/[^/]+\.workers\.dev$/.test(PUSH_TEST_WORKER_URL))throw new Error('Cloudflare WorkerのURLを設定してください。');
+const STAFF_PREVIEW_WORKER_URL = 'https://kids-attendance-staff-push.kanataaan06.workers.dev';
+const isStaffPushRole=role=>role==='member'||role==='admin';
+const isPreviewPushRole=role=>role==='parent'||isStaffPushRole(role);
+async function pushTestRequest(path,data,workerUrl=PUSH_TEST_WORKER_URL){
+  if(!workerUrl||!/^https:\/\/[^/]+\.workers\.dev$/.test(workerUrl))throw new Error('Cloudflare WorkerのURLを設定してください。');
   const user=auth.currentUser;if(!user)throw new Error('ログインしてください。');
-  const response=await fetch(PUSH_TEST_WORKER_URL+path,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await user.getIdToken()},body:JSON.stringify(data)});
+  const response=await fetch(workerUrl+path,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await user.getIdToken()},body:JSON.stringify(data)});
   const reply=await response.json();if(!response.ok)throw new Error(reply.message||'送信に失敗しました。');return reply;
 }
-let noticeRequestId=null;
+const noticeRequestIds={parent:null,staff:null};
 // Clear the iOS Home Screen badge once the parent opens or returns to the app.
 async function clearParentBadge(){
   // Android launchers usually derive badge counts from active notifications.
   // Do not clear Android badges when the app renders or regains focus.
   if(!/iPhone|iPad|iPod/i.test(navigator.userAgent))return;
-  if(profile?.role!=='parent'||typeof navigator.clearAppBadge!=='function')return;
+  if(!isPreviewPushRole(profile?.role)||typeof navigator.clearAppBadge!=='function')return;
   try{await navigator.clearAppBadge()}catch(error){console.warn('App badge could not be cleared',error)}
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)clearParentBadge()});
@@ -241,7 +244,7 @@ window.addEventListener('pageshow',()=>clearParentBadge());
 // FCM forwards foreground messages to the page instead of onBackgroundMessage.
 isMessagingSupported().then(supported=>{
   if(supported)onMessage(getMessaging(app),async payload=>{
-    if(profile?.role!=='parent')return;
+    if(!isPreviewPushRole(profile?.role))return;
     const registration=await navigator.serviceWorker.getRegistration(new URL('./compact_preview.html',location.href));
     if(typeof navigator.setAppBadge==='function')await navigator.setAppBadge(1).catch(error=>console.warn('Foreground badge unavailable',error));
     if(registration)await registration.showNotification(payload.data?.title||'キッズ出欠・通知テスト',{body:payload.data?.body||'活動予定が追加・変更されました。',icon:'./icon-192.png',tag:'kids-parent-push-test-'+Date.now(),renotify:false,silent:false});
@@ -608,11 +611,16 @@ async function executeBulkDelete(){
   }finally{deleteBusy=false;setLoading('bulkDelete',false);render();}
 }
 let parentPushSettingsOpen=false,parentPushUiRequest=0,parentPushWorkerUpdateChecked=false;
+let staffPushRegistration=null;
 // A successful device subscription persists between sign-ins; allow reopening from the small settings button.
 async function syncParentPushUI(){
   const panel=$('parentPushTest'),settings=$('parentPushSettingsButton');
-  if(profile?.role!=='parent'||!me){panel.classList.add('hidden');settings.classList.add('hidden');return}
+  const role=profile?.role;
+  if(!isPreviewPushRole(role)||!me){panel.classList.add('hidden');settings.classList.add('hidden');return}
   const uid=me.uid,request=++parentPushUiRequest;
+  const staff=isStaffPushRole(role);
+  $('previewPushTitle').textContent=staff?'🔔 通知テスト（講師・管理者）':'🔔 通知テスト（保護者専用）';
+  $('previewPushDescription').textContent=staff?'この端末をスタッフ通知の受信先として登録します。':'iPhoneはSafariからホーム画面に追加して起動してください。AndroidはChromeで開いてください。各端末で同じ保護者アカウントにログインして登録します。通知の許可はこの端末で1回だけ必要です。';
   panel.classList.add('hidden');
   let registered=false;
   try{
@@ -624,15 +632,16 @@ async function syncParentPushUI(){
       }
       const subscription=await registration?.pushManager?.getSubscription();
       registered=!!subscription && !!registration?.active?.scriptURL?.endsWith('/push-test-sw.js');
+      if(staff)registered=registered&&staffPushRegistration===uid;
     }
   }catch(error){console.warn('Could not check push subscription',error)}
-  if(request!==parentPushUiRequest||me?.uid!==uid||profile?.role!=='parent')return;
+  if(request!==parentPushUiRequest||me?.uid!==uid||profile?.role!==role)return;
   panel.classList.toggle('hidden',registered&&!parentPushSettingsOpen);
   settings.classList.toggle('hidden',!registered);
 }
 $('testParentBadge').onclick=async()=>{
   const status=$('parentBadgeStatus');
-  if(profile?.role!=='parent')return;
+  if(!isPreviewPushRole(profile?.role))return;
   if(typeof navigator.setAppBadge!=='function'){
     status.textContent='この起動方法ではバッジ機能が利用できません。ホーム画面の「通知テスト」アイコンから開いてください。';return;
   }
@@ -644,7 +653,7 @@ $('testParentBadge').onclick=async()=>{
   }
 };
 $('parentPushSettingsButton').onclick=()=>{parentPushSettingsOpen=!parentPushSettingsOpen;syncParentPushUI()};
-function render(){if(!profile||!me)return;const parent=profile.role==='parent';if(parent){syncParentPushUI();clearParentBadge()}else{$('parentPushTest').classList.add('hidden');$('parentPushSettingsButton').classList.add('hidden')};if(parent&&tab!=='future')tab='future';let ts=today(),sorted=[...events].sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start));let future=sorted.filter(e=>profile.role==='parent'?e.dateAt?.toMillis()>Date.now():e.date>=ts),past=sorted.filter(e=>e.date<ts).reverse();for(let t of ['future','bulk','create','past','members','deleteManager']){$(t).classList.toggle('hidden',t!==tab||(parent&&t!=='future'));document.querySelector(`[data-tab="${t}"]`)?.classList.toggle('active',t===tab);document.querySelector(`[data-tab="${t}"]`)?.setAttribute('aria-current',t===tab?'page':'false')}document.querySelectorAll('.tabs [data-tab]').forEach(el=>el.classList.toggle('hidden',parent&&el.dataset.tab!=='future'));document.querySelector('.tabs').classList.toggle('hidden',parent);$('membersTab').classList.toggle('hidden',profile.role!=='admin');$('deleteManagerTab').classList.toggle('hidden',profile.role!=='admin');document.querySelector('.tabs')?.classList.toggle('member-only-tabs',profile.role!=='admin');if(profile.role!=='admin'&&(tab==='members'||tab==='deleteManager')){tab='future';return render()}renderFuture(future);if(parent){$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('myname').classList.add('hidden');$('parentLogout').classList.remove('hidden');return}$('parentLogout').classList.add('hidden');$('myname').classList.remove('hidden');renderUnanswered(future);if(tab==='past')renderPast();if(profile.role==='admin'&&tab==='deleteManager')renderDeleteManager();$('bulk').innerHTML=`<div class="card"><h3>${esc(profile.name)}の出欠をまとめて回答</h3><p class="muted">○・△・×をタップして選択し、最後に「まとめて保存」を押してください。</p>${future.map(e=>`<div class="bulk-entry"><div class="bulk-info"><strong class="${dateColorClass(e.date)}">${dateLabel(e.date)}</strong><span class="small">${e.allDay?"終日":esc(e.start)} ${esc(e.kind||"通常活動")}・${esc(e.place)}</span></div><div class="bulk-options" role="radiogroup" aria-label="${esc(e.date)}の出欠">${['○','△','×'].map(v=>`<label class="bulk-choice"><input type="radio" class="bulk-answer" name="bulk-${esc(e.id)}" data-id="${esc(e.id)}" value="${v}" ${v===(bulkDrafts.has(e.id)?bulkDrafts.get(e.id):e.answers?.[me.uid])?'checked':''}><span>${v}</span></label>`).join('')}</div></div>`).join('')}<div class="row"><button class="primary" id="savebulk">まとめて保存</button></div></div>`;$('savebulk').onclick=async()=>{if(profile?.role==='parent')return;const entries=[...document.querySelectorAll('.bulk-answer:checked')];const btn=$('savebulk');btn.disabled=true;try{
+function render(){if(!profile||!me)return;const parent=profile.role==='parent';if(isPreviewPushRole(profile.role)){syncParentPushUI();clearParentBadge()}else{$('parentPushTest').classList.add('hidden');$('parentPushSettingsButton').classList.add('hidden')};if(parent&&tab!=='future')tab='future';let ts=today(),sorted=[...events].sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start));let future=sorted.filter(e=>profile.role==='parent'?e.dateAt?.toMillis()>Date.now():e.date>=ts),past=sorted.filter(e=>e.date<ts).reverse();for(let t of ['future','bulk','create','past','members','deleteManager']){$(t).classList.toggle('hidden',t!==tab||(parent&&t!=='future'));document.querySelector(`[data-tab="${t}"]`)?.classList.toggle('active',t===tab);document.querySelector(`[data-tab="${t}"]`)?.setAttribute('aria-current',t===tab?'page':'false')}document.querySelectorAll('.tabs [data-tab]').forEach(el=>el.classList.toggle('hidden',parent&&el.dataset.tab!=='future'));document.querySelector('.tabs').classList.toggle('hidden',parent);$('membersTab').classList.toggle('hidden',profile.role!=='admin');$('deleteManagerTab').classList.toggle('hidden',profile.role!=='admin');document.querySelector('.tabs')?.classList.toggle('member-only-tabs',profile.role!=='admin');if(profile.role!=='admin'&&(tab==='members'||tab==='deleteManager')){tab='future';return render()}renderFuture(future);if(parent){$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('myname').classList.add('hidden');$('parentLogout').classList.remove('hidden');return}$('parentLogout').classList.add('hidden');$('myname').classList.remove('hidden');renderUnanswered(future);if(tab==='past')renderPast();if(profile.role==='admin'&&tab==='deleteManager')renderDeleteManager();$('bulk').innerHTML=`<div class="card"><h3>${esc(profile.name)}の出欠をまとめて回答</h3><p class="muted">○・△・×をタップして選択し、最後に「まとめて保存」を押してください。</p>${future.map(e=>`<div class="bulk-entry"><div class="bulk-info"><strong class="${dateColorClass(e.date)}">${dateLabel(e.date)}</strong><span class="small">${e.allDay?"終日":esc(e.start)} ${esc(e.kind||"通常活動")}・${esc(e.place)}</span></div><div class="bulk-options" role="radiogroup" aria-label="${esc(e.date)}の出欠">${['○','△','×'].map(v=>`<label class="bulk-choice"><input type="radio" class="bulk-answer" name="bulk-${esc(e.id)}" data-id="${esc(e.id)}" value="${v}" ${v===(bulkDrafts.has(e.id)?bulkDrafts.get(e.id):e.answers?.[me.uid])?'checked':''}><span>${v}</span></label>`).join('')}</div></div>`).join('')}<div class="row"><button class="primary" id="savebulk">まとめて保存</button></div></div>`;$('savebulk').onclick=async()=>{if(profile?.role==='parent')return;const entries=[...document.querySelectorAll('.bulk-answer:checked')];const btn=$('savebulk');btn.disabled=true;try{
   const pending=entries.filter(el=>events.find(e=>e.id===el.dataset.id)?.answers?.[me.uid]!==el.value);
   if(!pending.length){notify('変更が必要な出欠回答はありません');return}
   let saved=0;
@@ -696,7 +705,7 @@ unsubs.push(onSnapshot(query(collection(db,'events'),where('date','>=',today()))
 
 function showPending(){$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('app').classList.add('hidden');$('pending').classList.remove('hidden');$('uid').textContent=me.uid;$('authstate').textContent='承認待ち';$('mynamehint').textContent=myPendingName?'登録名：'+myPendingName+'（承認を待っています）':'先に表示名を登録してください。';}
 $('login').onclick=async()=>{try{await signInWithPopup(auth,provider)}catch(e){if(e.code==='auth/popup-blocked'){await signInWithRedirect(auth,provider)}else{alert('ログインに失敗しました：'+e.message)}}};$('logout').onclick=()=>signOut(auth);$('parentLogoutButton').onclick=()=>signOut(auth);$('copyuid').onclick=()=>navigator.clipboard.writeText(me.uid).then(()=>alert('コピーしました')).catch(()=>alert('コピーできない場合は表示されたIDを選択してください'));
-onAuthStateChanged(auth,async user=>{clean();me=user;$('login').classList.toggle('hidden',!!user);$('logout').classList.toggle('hidden',!user);const avatar=$('authavatar');const url=user?.photoURL||'';const safe=/^https:\/\/(?:lh[0-9]+\.googleusercontent\.com|[a-z0-9.-]+\.googleusercontent\.com)\//i.test(url);avatar.classList.toggle('hidden',!safe);avatar.onerror=()=>avatar.classList.add('hidden');if(safe)avatar.src=url;else avatar.removeAttribute('src');if(!user){$('parentLogout').classList.add('hidden');setLoading('startup',false);$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('myname').classList.add('hidden');$('authstate').textContent='ログインしてください';$('app').classList.add('hidden');$('pending').classList.add('hidden');return}try{$('myname').classList.remove('hidden');const nameSnap=await getDoc(doc(db,'userProfiles',user.uid)).catch(e=>{if(e.code==='permission-denied')return {exists:()=>false};throw e});myPendingName=nameSnap.exists()?nameSnap.data().name||'':'';$('mynameinput').value=myPendingName;await watch();if(user.photoURL&&profile&&profile.role!=='parent'&&profile.photoURL!==user.photoURL){try{await updateDoc(doc(db,'members',user.uid),{photoURL:user.photoURL})}catch(err){console.warn('プロフィール画像の保存にはFirestoreルールの更新が必要です',err)}}}catch(e){setLoading('startup',false);showPending();console.error(e);$('mynamehint').textContent='プロフィールを読み込めません。Firestoreルールを確認してください。'}});getRedirectResult(auth).catch(console.error);
+onAuthStateChanged(auth,async user=>{clean();me=user;$('login').classList.toggle('hidden',!!user);$('logout').classList.toggle('hidden',!user);const avatar=$('authavatar');const url=user?.photoURL||'';const safe=/^https:\/\/(?:lh[0-9]+\.googleusercontent\.com|[a-z0-9.-]+\.googleusercontent\.com)\//i.test(url);avatar.classList.toggle('hidden',!safe);avatar.onerror=()=>avatar.classList.add('hidden');if(safe)avatar.src=url;else avatar.removeAttribute('src');if(!user){$('parentLogout').classList.add('hidden');setLoading('startup',false);$('unansweredAlert').classList.add('hidden');$('unansweredAlert').open=false;$('myname').classList.add('hidden');$('authstate').textContent='ログインしてください';$('app').classList.add('hidden');$('pending').classList.add('hidden');return}try{$('myname').classList.remove('hidden');const nameSnap=await getDoc(doc(db,'userProfiles',user.uid)).catch(e=>{if(e.code==='permission-denied')return {exists:()=>false};throw e});myPendingName=nameSnap.exists()?nameSnap.data().name||'':'';$('mynameinput').value=myPendingName;await watch();}catch(e){setLoading('startup',false);showPending();console.error(e);$('mynamehint').textContent='プロフィールを読み込めません。Firestoreルールを確認してください。'}});getRedirectResult(auth).catch(console.error);
 $('refreshLogo').addEventListener('click',()=>window.location.reload());
 document.addEventListener('click',async ev=>{let b=ev.target.closest('button');if(!b||!profile)return;if(b.dataset.openEvent){
   const selectedEvent=events.find(e=>e.id===b.dataset.openEvent);
@@ -808,7 +817,10 @@ $('add').onclick=async()=>{if(!profile||profile.role==='parent')return;const dat
 
 $('savemyname').onclick=async()=>{if(!me||profile?.role==='parent')return;const name=$('mynameinput').value.trim();if(!name||name.length>30){alert('表示名を1〜30文字で入力してください');return}const btn=$('savemyname');btn.disabled=true;try{await setDoc(doc(db,'userProfiles',me.uid),{name,updatedAt:serverTimestamp()});myPendingName=name;if(profile){await updateDoc(doc(db,'members',me.uid),{name});profile.name=name;$('authstate').textContent='ログイン中：'+name;render()}else{$('mynamehint').textContent='登録名：'+name+'（承認を待っています）'}alert('表示名を保存しました')}catch(e){console.error(e);alert('名前を保存できませんでした。Firestoreルールを確認してください。\n'+e.message)}finally{btn.disabled=false}};
 $('enableParentPush').onclick=async()=>{
-  if(profile?.role!=='parent')return;
+  const role=profile?.role;
+  if(!isPreviewPushRole(role))return;
+  const staff=isStaffPushRole(role),uid=me?.uid;
+  const workerUrl=staff?STAFF_PREVIEW_WORKER_URL:PUSH_TEST_WORKER_URL;
   const btn=$('enableParentPush'),result=$('parentPushStatus');
   btn.disabled=true;result.textContent='通知の設定を確認しています…';
   let stage='端末の対応状況';
@@ -820,7 +832,7 @@ $('enableParentPush').onclick=async()=>{
     if(!('Notification' in window)||!('serviceWorker' in navigator)||!('PushManager' in window)){
       throw new Error('この端末・ブラウザではWebプッシュ通知に対応していません。');
     }
-    if(!PUSH_TEST_WORKER_URL)throw new Error('Cloudflare WorkerのURLが未設定です。');
+    if(!workerUrl)throw new Error('Cloudflare WorkerのURLが未設定です。');
     if(!PUSH_TEST_VAPID_KEY){
       throw new Error('Firebaseの公開VAPIDキーがまだ設定されていません。管理者側の設定が必要です。');
     }
@@ -835,27 +847,34 @@ $('enableParentPush').onclick=async()=>{
     const token=await getToken(getMessaging(app),{vapidKey:PUSH_TEST_VAPID_KEY,serviceWorkerRegistration:worker});
     if(!token)throw new Error('通知用の登録情報を取得できませんでした。');
     stage='Cloudflareへの端末登録';result.textContent='⑤ 通知先を登録中…';
-    await pushTestRequest('/register',{token});
+    if(me?.uid!==uid||profile?.role!==role)throw new Error('ログイン中のアカウントが変わりました。');
+    await pushTestRequest('/register',{token},workerUrl);
+    if(staff)staffPushRegistration=uid;
     result.textContent='✓ 通知の受信準備ができました！管理者からテスト通知を送ってもらってください。';
-    parentPushSettingsOpen=false;
+    parentPushSettingsOpen=staff;
     await syncParentPushUI();
   }catch(error){console.error('Parent push registration failed at '+stage,error);result.textContent='設定できませんでした（'+stage+'）：'+(error?.message||String(error))}
   finally{btn.disabled=false}
 };
-$('noticeTestButton').onclick=async()=>{
+$('noticeTestButton').onclick=()=>sendPreviewNotice(false);
+$('staffNoticeTestButton').onclick=()=>sendPreviewNotice(true);
+async function sendPreviewNotice(staff){
   if(profile?.role!=='admin')return;
-  if(!window.confirm('【保護者のみ・通知テスト】\n\n指定した夫の登録済み全端末に、活動予定のお知らせを1件ずつ送信します。\n講師には送りません。\n\n送信しますか？'))return;
-  const btn=$('noticeTestButton'),result=$('noticeTestResult');
-  btn.disabled=true;result.hidden=false;result.textContent='保護者へテスト通知を送信しています…';
+  const buttonId=staff?'staffNoticeTestButton':'noticeTestButton';
+  const resultId=staff?'staffNoticeTestResult':'noticeTestResult';
+  if(!window.confirm(staff?'【スタッフ通知テスト】\n\n登録済みの講師・管理者の端末にテスト通知を送信します。\n送信しますか？':'【保護者のみ・通知テスト】\n\n指定した夫の登録済み全端末に、活動予定のお知らせを1件ずつ送信します。\n講師には送りません。\n\n送信しますか？'))return;
+  const btn=$(buttonId),result=$(resultId);
+  const recipient=staff?'staff':'parent';
+  btn.disabled=true;result.hidden=false;result.textContent=(staff?'スタッフ':'保護者')+'へテスト通知を送信しています…';
   try{
-    noticeRequestId ||= crypto.randomUUID();
-    const d=await pushTestRequest('/send',{requestId:noticeRequestId});
-    noticeRequestId=null;
+    noticeRequestIds[recipient] ||= crypto.randomUUID();
+    const d=await pushTestRequest('/send',{requestId:noticeRequestIds[recipient]},staff?STAFF_PREVIEW_WORKER_URL:PUSH_TEST_WORKER_URL);
+    noticeRequestIds[recipient]=null;
     result.textContent=d.sent>0?'✓ '+d.sent+'台に送信しました。各端末の通知を確認してください。':(d.message||'送信できませんでした。受信側の通知登録を確認してください。');
     if(d.failed)result.textContent+='（送信失敗：'+d.failed+'件）';
   }catch(error){console.error('Parent push send failed',error);result.textContent='送信できませんでした：'+(error?.message||String(error))+'。Cloudflare Workerの設定と各端末の受信状況を確認してください。再試行では同じ送信IDを使用します。'}
   finally{btn.disabled=false}
-};
+}
 $('addmember').onclick=async()=>{if(profile?.role!=='admin')return;const uid=$('memberuid').value.trim();if(!uid){alert('ユーザーIDを入力してください');return}if(members.some(m=>m.id===uid)){alert('この人はすでに登録済みです');return}if(members.length>=10){alert('メンバーは10人までです');return}try{const nameSnap=await getDoc(doc(db,'userProfiles',uid));const name=nameSnap.exists()?nameSnap.data().name?.trim():'';if(!name){alert('相手の名前が未登録です。本人に名前を保存してもらってください');return}const approval=writeBatch(db);approval.set(doc(db,'members',uid),{name,role:'member',order:members.length});approval.set(doc(db,'accessStatus',uid),{role:'member'});await approval.commit();$('memberuid').value='';notify(name+'さんを承認しました。相手にページを再読み込みしてもらってください')}catch(e){fail(e)}};
 
 </script></body></html>
