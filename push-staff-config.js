@@ -1,5 +1,5 @@
 // Production staff notification client settings (public values only).
 // Keep this separate from the parent-only notification test.
-export const STAFF_PUSH_VAPID_KEY = 'BBwFa21p9mma29qEn89ZoBpzXZKbkUi2n1zrtnbfh7opEuOQ7JOZncK4zh6691b8vizbJGyZ43vZClAJmtObr-4';
-export const STAFF_PUSH_WORKER_URL = '';
+export const PUSH_STAFF_VAPID_KEY = 'BBwFa21p9mma29qEn89ZoBpzXZKbkUi2n1zrtnbfh7opEuOQ7JOZncK4zh6691b8vizbJGyZ43vZClAJmtObr-4';
+export const PUSH_STAFF_WORKER_URL = '';
 // Production staff endpoints must be added server-side before this client is enabled.
