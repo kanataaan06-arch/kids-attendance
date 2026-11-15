@@ -72,6 +72,28 @@ service cloud.firestore {
         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['date','start','end','place','kind','allDay'])
         || matchesEvent(getAfter(/databases/$(database)/documents/parentSchedules/$(eventId)).data, request.resource.data));
       allow delete: if admin() && !existsAfter(/databases/$(database)/documents/parentSchedules/$(eventId));
+      // Shared child attendance notes: all approved staff may add, edit, or remove.
+      // Parent-role accounts are excluded. Names and status only; no child account required.
+      match /childMemos/{memoId} {
+        allow read: if instructor();
+        allow create: if instructor()
+          && request.resource.data.keys().hasOnly(['name','type','createdAt','updatedAt'])
+          && request.resource.data.keys().hasAll(['name','type','createdAt','updatedAt'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() >= 1
+          && request.resource.data.name.size() <= 40
+          && request.resource.data.type in ['欠席','遅刻','早退']
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+        allow update: if instructor()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','type','updatedAt'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() >= 1
+          && request.resource.data.name.size() <= 40
+          && request.resource.data.type in ['欠席','遅刻','早退']
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if instructor();
+      }
       match /answers/{uid} {
         allow read: if instructor();
         allow create, update: if instructor() && request.auth.uid == uid
