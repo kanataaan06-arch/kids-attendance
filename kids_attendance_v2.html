@@ -214,7 +214,7 @@ button,select,input{font:inherit;border:1px solid #cdd4df;border-radius:9px;padd
 </main>
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
-import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
+import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut,reload} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import {getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,query,where,orderBy,serverTimestamp,writeBatch,Timestamp,runTransaction,arrayUnion,arrayRemove} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import {getMessaging,getToken,onMessage,isSupported as isMessagingSupported} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-messaging.js';
 import {PUSH_TEST_VAPID_KEY,PUSH_TEST_WORKER_URL} from './push-test-config.js';
@@ -667,10 +667,21 @@ $('memberlist').innerHTML=members.map(m=>`<article class="member-card">
   <div class="member-card-top">${memberAvatar(m)}<div class="member-card-name"><strong>${esc(m.name||'名前未設定')}</strong><span>${m.role==='admin'?'👑 管理者':m.role==='parent'?'👪 保護者':'👤 メンバー'}</span></div><span class="member-approved">✓ 承認済み</span></div>
   <details class="member-details"><summary>ユーザーID・管理操作</summary><div class="member-uid">${esc(m.id)}</div>${m.role!=='admin'?`<div class="member-role-control"><label for="role-${esc(m.id)}">権限</label><select id="role-${esc(m.id)}" data-member-role="${esc(m.id)}"><option value="member" ${m.role!=='parent'?'selected':''}>👤 メンバー</option><option value="parent" ${m.role==='parent'?'selected':''}>👪 保護者（閲覧のみ）</option></select></div>`:''}${m.role!=='admin'?`<button type="button" data-remove="${esc(m.id)}" class="danger">このメンバーの承認を取り消す</button>`:'<p class="small muted">管理者の承認はこの画面から取り消せません。</p>'}</details>
 </article>`).join('')}
+async function syncOwnGoogleAvatar(){
+ if(!me||!profile||profile.role==='parent')return;
+ try{
+   await reload(me);
+   const googleUrl=me.providerData?.find(p=>p.providerId==='google.com')?.photoURL||me.photoURL||'';
+   if(!/^https:\/\/[a-z0-9.-]+\.googleusercontent\.com\//i.test(googleUrl))return;
+   if(googleUrl===profile.photoURL)return;
+   await updateDoc(doc(db,'members',me.uid),{photoURL:googleUrl});
+ }catch(error){console.info('Googleアイコンの同期を保留しました',error?.code||error?.message)}
+}
 async function watch(){clean();const accessRole=await loadAccessRole();if(!accessRole){showPending();setLoading('startup',false);return}
 if(accessRole==='parent'){const own=await getDoc(doc(db,'members',me.uid));const savedName=own.exists()&&typeof own.data().name==='string'?own.data().name.trim():'';profile={id:me.uid,role:'parent',name:savedName||'保護者'}}
 else {const snap=await getDoc(doc(db,'members',me.uid));if(!snap.exists()){showPending();setLoading('startup',false);return}profile={id:me.uid,...snap.data()}}
 $('mynameinput').value=profile.name||'';$('mynamehint').textContent='名前はいつでも変更できます。';$('pending').classList.add('hidden');$('app').classList.remove('hidden');$('authstate').textContent='ログイン中：'+profile.name;
+syncOwnGoogleAvatar();
 unsubs.push(onSnapshot(doc(db,'accessStatus',me.uid),snap=>{
   if(!snap.exists()||profile?.role!==snap.data().role){watch().catch(fail)}
 },error=>{if(error.code==='permission-denied')watch().catch(fail);else fail(error)}));
