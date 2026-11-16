@@ -632,11 +632,13 @@ async function executeBulkDelete(){
 }
 let parentPushSettingsOpen=false,parentPushUiRequest=0,parentPushWorkerUpdateChecked=false;
 const staffPushRegisteredKey=uid=>'kids-staff-push-registered:'+uid;
+// Notification controls are for phones/tablets; desktop browsers keep all attendance features without the notification UI.
+const isMobileNotificationDevice=()=>/Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 // A successful device subscription persists between sign-ins; allow reopening from the small settings button.
 async function syncParentPushUI(){
   const panel=$('parentPushTest'),settings=$('parentPushSettingsButton');
   const role=profile?.role;
-  if(!isPreviewPushRole(role)||!me){panel.classList.add('hidden');settings.classList.add('hidden');return}
+  if(!isPreviewPushRole(role)||!me||!isMobileNotificationDevice()){panel.classList.add('hidden');settings.classList.add('hidden');return}
   const uid=me.uid,request=++parentPushUiRequest;
   const staff=isStaffPushRole(role);
   $('previewPushTitle').textContent=staff?'🔔 スタッフ通知':'🔔 通知設定';
